@@ -13,11 +13,11 @@ fn main() {
     io::stdin().read_line(&mut answer).expect("failed to read input");
     
     //https://docs.rs/regex/latest/regex/
-    let no = Regex::new("[nN]|[nN][oO]+").unwrap();
+    let no = Regex::new("[nN]|[nN][oO]").unwrap();
 
     //https://doc.rust-lang.org/std/primitive.str.html#method.trim
     if no.is_match(answer.trim()){
         println!("Goodbye!");
-        std::process::exit(1);
+        std::process::exit(0);
     }
 }
