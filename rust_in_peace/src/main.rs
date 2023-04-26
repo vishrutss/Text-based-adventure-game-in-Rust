@@ -1,5 +1,8 @@
+use clearscreen::clear;
 use regex::Regex;
 use std::io;
+
+pub mod game_lib;
 
 fn main() {
     println!("Hello, Player!\n");
@@ -20,4 +23,9 @@ fn main() {
         println!("Goodbye!");
         std::process::exit(0);
     }
+
+    //https://docs.rs/clearscreen/latest/clearscreen/
+    clear().expect("failed to clear screen");
+
+    println!("You find yourself in a gloomy forest.")
 }
