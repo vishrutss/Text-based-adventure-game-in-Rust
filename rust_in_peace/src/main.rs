@@ -13,7 +13,7 @@ fn main() {
     let mut answer = String::new();
     io::stdin()
         .read_line(&mut answer)
-        .expect("failed to read input");
+        .expect("Failed to read input");
 
     //https://docs.rs/regex/latest/regex/
     let no = Regex::new("[nN]|[nN][oO]").unwrap();
@@ -25,7 +25,23 @@ fn main() {
     }
 
     //https://docs.rs/clearscreen/latest/clearscreen/
-    clear().expect("failed to clear screen");
+    clear().expect("Failed to clear screen");
 
-    println!("You find yourself in a gloomy forest.")
+    println!("You find yourself lost in a gloomy forest. You see a column of smoke rising in the sky. It seems to be very far away.");
+
+    let mut command: game_lib::Command;
+    let mut output: String;
+
+    // Main game loop
+    loop {
+        command = game_lib::get_input();
+        output = game_lib::update_state(&command);
+        game_lib::update_screen(output);
+
+        if matches!(command, game_lib::Command::Quit) {
+            break;
+        }
+    }
+
+    println!("Goodbye!");
 }
