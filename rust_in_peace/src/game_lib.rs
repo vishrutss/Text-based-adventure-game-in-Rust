@@ -27,16 +27,16 @@ impl World {
             player_location: 0,
             locations: vec![
                 Location {
+                    name: "Forest".to_string(),
+                    description: "Look out for tree people".to_string(),
+                },
+                Location {
                     name: "Dungeons".to_string(),
                     description: "Be aware of the trolls in the dungeon".to_string(),
                 },
                 Location {
                     name: "Cave".to_string(),
                     description: "Watch out for bats and look for light".to_string(),
-                },
-                Location {
-                    name: "Forest".to_string(),
-                    description: "Look out for tree people".to_string(),
                 },
             ],
         }
@@ -46,21 +46,21 @@ impl World {
         match command {
             Command::Look(noun) => self.do_look(noun),
             Command::Go(noun) => self.do_go(noun),
-            Command::Quit => format!("Quitting.\nThank you for playing!"),
-            Command::Unknown(input_str) => {
-                format!("Please provide the right command {}'.", input_str)
+            Command::Quit => "Quitting.\nThank you for playing!".to_string(),
+            Command::Unknown(_) => {
+                "Please provide the right command. Available commands: look <add place>, go <add place>, quit\n".to_string()
             }
         }
     }
 
-    pub fn do_look(&self, noun: &String) -> String {
-        match noun.as_str() {
+    pub fn do_look(&self, noun: &str) -> String {
+        match noun {
             "around" | "" => format!(
-                " Welcome to the {}\n {}.\n",
+                " You are in the {}\n {}.\n",
                 self.locations[self.player_location].name,
                 self.locations[self.player_location].description
             ),
-            _ => format!("Seek for the right path.\n"),
+            _ => "Seek for the right path.\n".to_string(),
         }
     }
 
@@ -70,22 +70,48 @@ impl World {
         for (pos, location) in self.locations.iter().enumerate() {
             if *noun == location.name.to_lowercase() {
                 if pos == self.player_location {
-                    output = output + &format!("Wherever you go, there you are.\n");
+                    output += "Wherever you go, there you are.\n";
                 } else {
                     self.player_location = pos;
-                    output = output + &format!("OK.\n\n") + &self.do_look(&"around".to_string());
+                    output = output + "OK.\n\n" + &self.do_look("around");
                 }
                 break;
             }
         }
 
-        if output.len() == 0 {
-            format!("I don't understand where you want to go.")
+        if output.is_empty() {
+            //https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect
+            //https://doc.rust-lang.org/std/iter/struct.Map.html?search=collect
+            //https://doc.rust-lang.org/alloc/slice/trait.Join.html
+            /*
+            The line of code below uses iter() method to iterate over each location in world.locations,
+            then uses map() method to create a new iterator that clones each location’s name,
+            and finally uses collect() method to collect all the cloned names into a vector and join them
+            with commas using join() method.
+            */
+            let location_names = self
+                .locations
+                .iter()
+                .map(|location| location.name.clone())
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!(
+                "I don't understand where you want to go. Availabe locations: {}",
+                location_names
+            )
         } else {
             output
         }
     }
 }
+
+/// Default implementation for World
+impl Default for World {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Function that parses user's commands into a verb and a noun
 pub fn parse(input: String) -> Command {
     let input = input.to_lowercase();
@@ -114,24 +140,6 @@ pub fn get_input() -> Command {
 
     parse(input)
 }
-
-/*
-pub fn update_state(command: &Command) -> String {
-    let output: String=match command {
-        Command::Look(_)=>{
-            "You see nothing but trees all around you. You see a column of smoke rising in the sky. It seems to be very far away.\n".to_string()
-        }
-        Command::Go(_)=>{
-            "You start walking towards the smoke\n".to_string()
-        }
-        Command::Unkown(_)=>{
-            "Invalid command!!\nThese are the available commands: look <add place>, go <add place>, quit\n".to_string()
-        }
-        Command::Quit => "Quitting.\nThank you for playing!\n".to_string()
-    };
-    output
-}
-*/
 
 /// Function to update the screen
 pub fn update_screen(output: String) {
