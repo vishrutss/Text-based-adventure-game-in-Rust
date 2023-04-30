@@ -30,12 +30,13 @@ fn main() {
     println!("You find yourself lost in a gloomy forest. You see a column of smoke rising in the sky. It seems to be very far away.");
 
     let mut command: game_lib::Command;
+    let mut world = game_lib::World::new();
     let mut output: String;
 
     // Main game loop
     loop {
         command = game_lib::get_input();
-        output = game_lib::update_state(&command);
+        output = world.update_state(&command);
         game_lib::update_screen(output);
 
         if matches!(command, game_lib::Command::Quit) {
