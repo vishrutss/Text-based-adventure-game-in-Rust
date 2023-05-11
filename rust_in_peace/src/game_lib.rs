@@ -10,7 +10,7 @@ const LOC_DUNGEONS: usize = 1;
 const LOC_CAVE: usize = 2;
 const LOC_TAVERN: usize = 3;
 const LOC_PLAYER: usize = 4;
-const LOC_COPILOT: usize = 6;
+
 /// Command enum
 pub enum Command {
     Ask(String),
@@ -24,6 +24,7 @@ pub enum Command {
     Quit,
 }
 
+/// Get input from the user
 impl fmt::Display for Command {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -39,16 +40,20 @@ impl fmt::Display for Command {
         }
     }
 }
+
+/// The object struct
 pub struct Object {
     pub name: String,
     pub description: String,
     pub location: Option<usize>,
 }
 
+/// The world struct
 pub struct World {
     pub objects: Vec<Object>,
 }
 
+/// The game struct
 impl World {
     pub fn new() -> Self {
         World {
@@ -82,17 +87,17 @@ impl World {
                 },
                 Object {
                     name: "Sword".to_string(),
-                    description: "A rusty sword stuck in the wall.".to_string(),
+                    description: "A rusty sword.".to_string(),
                     location: Some(LOC_DUNGEONS),
                 },
                 Object {
                     name: "Bow".to_string(),
-                    description: "A bow on the ground.".to_string(),
+                    description: "A bow.".to_string(),
                     location: Some(LOC_TAVERN),
                 },
                 Object {
                     name: "Bones".to_string(),
-                    description: "There are bones of some animal on the ground!!".to_string(),
+                    description: "Bones of some animal.".to_string(),
                     location: Some(LOC_CAVE),
                 },
             ],
@@ -116,76 +121,8 @@ impl World {
         result
     }
 
-    /// Gets the objests that are visible to the player at a given location
-    // fn object_visible(&self, noun: &String) -> (String, Option<usize>) {
-    //     let mut result = String::new();
-    //     let index = self.object_index(noun);
-    //     let obj_location = index.and_then(|a| self.objects[a].location);
-    //     let obj_container_loc = index
-    //         .and_then(|a| self.objects[a].location)
-    //         .and_then(|b| self.objects[b].location);
-    //     let player_location = self.objects[LOC_PLAYER].location;
-    //     match (index, obj_location, obj_container_loc, player_location) {
-    //         // Return none of not a valid command
-    //         (None, _, _, _) => {
-    //             //https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect
-    //             //https://doc.rust-lang.org/std/iter/struct.Map.html?search=collect
-    //             //https://doc.rust-lang.org/alloc/slice/trait.Join.html
-    //             /*
-    //             The line of code below uses iter() method to iterate over each location in world.locations,
-    //             then uses filter() to select only objects that are locations,
-    //             then uses map() method to create a new iterator that clones each location’s name,
-    //             and finally uses collect() method to collect all the cloned names into a vector and join them
-    //             with commas using join() method.
-    //             */
-    //             let location_names: String = self
-    //                 .objects
-    //                 .iter()
-    //                 .filter(|object| object.location.is_none())
-    //                 .map(|object| object.name.clone())
-    //                 .collect::<Vec<_>>()
-    //                 .join(", ");
-    //             let object_names: String = self
-    //                 .objects
-    //                 .iter()
-    //                 .filter(|object| object.location.is_some())
-    //                 .map(|object| object.name.clone())
-    //                 .collect::<Vec<_>>()
-    //                 .join(", ");
-    //             result = format!(
-    //                 "Invalid! Available locations: {}\n\tAvailable objects: {}",
-    //                 location_names, object_names
-    //             );
-    //             (result, None)
-    //         }
-    //         // Object is player
-    //         (Some(index), _, _, _) if index == LOC_PLAYER => (result, Some(index)),
-
-    //         // Object is the location where the player currently is
-    //         (Some(index), _, _, Some(player_location)) if index == player_location => {
-    //             (result, Some(index))
-    //         }
-    //         // Object is held by the player
-    //         (Some(index), Some(obj_location), _, _) if obj_location == LOC_PLAYER => {
-    //             (result, Some(index))
-    //         }
-    //         // Object is in the same location as the player
-    //         (Some(index), Some(obj_location), _, Some(player_location))
-    //             if obj_location == player_location =>
-    //         {
-    //             (result, Some(index))
-    //         }
-    //         // Object is a location
-    //         (Some(index), obj_location, _, _) if obj_location.is_none() => (result, Some(index)),
-
-    //         // Invalid object name
-    //         _ => {
-    //             result = format!("You don't see any '{}' here.\n", noun);
-    //             (result, None)
-    //         }
-    //     }
-    // }
-    fn object_visible(&self, message: &str, noun: &String) -> (String, Option<usize>) {
+    /// Check if the object is visible
+    fn object_visible(&self, noun: &String) -> (String, Option<usize>) {
         let mut output = String::new();
 
         let obj_index = self.object_index(noun);
@@ -196,56 +133,62 @@ impl World {
         let player_loc = self.objects[LOC_PLAYER].location;
 
         match (obj_index, obj_loc, obj_container_loc, player_loc) {
-            // Is this even an object?  If not, print a message
+            // Return none if not a valid command
             (None, _, _, _) => {
-                output = format!("I don't understand {}.\n", message);
+                //https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect
+                //https://doc.rust-lang.org/std/iter/struct.Map.html?search=collect
+                //https://doc.rust-lang.org/alloc/slice/trait.Join.html
+                /*
+                The line of code below uses iter() method to iterate over each location in world.locations,
+                then uses filter() to select only objects that are locations,
+                then uses map() method to create a new iterator that clones each location’s name,
+                and finally uses collect() method to collect all the cloned names into a vector and join them
+                with commas using join() method.
+                */
+                let location_names: String = self
+                    .objects
+                    .iter()
+                    .filter(|object| object.location.is_none())
+                    .map(|object| object.name.clone())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                let object_names: String = self
+                    .objects
+                    .iter()
+                    .filter(|object| object.location.is_some())
+                    .map(|object| object.name.clone())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                output = format!(
+                    "Invalid command! Available locations: {}\n\t\t Available objects: {}",
+                    location_names, object_names
+                );
                 (output, None)
             }
-            //
-            // For all the below cases, we've found an object, but should the player know that?
-            //
-            // Is this object the player?
+            // Object is player
             (Some(obj_index), _, _, _) if obj_index == LOC_PLAYER => (output, Some(obj_index)),
-            //
-            // Is this object in the same location as the player?
+            // Object is the location where the player currently is
             (Some(obj_index), _, _, Some(player_loc)) if obj_index == player_loc => {
                 (output, Some(obj_index))
             }
-            //
-            // Is this object being held by the player (i.e. 'in' the player)?
+            // Object is held by the player
             (Some(obj_index), Some(obj_loc), _, _) if obj_loc == LOC_PLAYER => {
                 (output, Some(obj_index))
             }
-            //
-            // Is this object at the same location as the player?
+            // Object is in the same location as the player
             (Some(obj_index), Some(obj_loc), _, Some(player_loc)) if obj_loc == player_loc => {
                 (output, Some(obj_index))
             }
-            //
-            // Is this object any location?
+            // Object is a location
             (Some(obj_index), obj_loc, _, _) if obj_loc.is_none() => (output, Some(obj_index)),
-            //
-            // Is this object contained by any object held by the player
-            (Some(obj_index), Some(_), Some(obj_container_loc), _)
-                if obj_container_loc == LOC_PLAYER =>
-            {
-                (output, Some(obj_index))
-            }
-            //
-            // Is this object contained by any object at the player's location?
-            (Some(obj_index), Some(_), Some(obj_container_loc), Some(player_loc))
-                if obj_container_loc == player_loc =>
-            {
-                (output, Some(obj_index))
-            }
-            //
-            // If none of the above, then we don't know what the noun is.
+            // Invalid object name
             _ => {
                 output = format!("You don't see any '{}' here.\n", noun);
                 (output, None)
             }
         }
     }
+
     /// Lists all objects in a location
     fn list_objects(&self, location: usize) -> (String, u64) {
         let mut result = String::new();
@@ -274,7 +217,7 @@ impl World {
             Command::Go(noun) => self.do_go(noun),
             Command::Quit => "Quitting.\nThank you for playing!".to_string(),
             Command::Unknown(_) => {
-                "Please provide the right command. Available commands: look <add place>, go <add place>, quit\n".to_string()
+                "Please provide the right command. Available commands: \nlook <add place>\ngo <add place>\nget <item name>\ndrop <item name>\nquit\n".to_string()
             }
             Command::Ask(noun) =>self.do_ask(noun),
             Command::Drop(noun) =>self.do_drop(noun),
@@ -301,12 +244,12 @@ impl World {
 
     /// Player goes to the specified location
     pub fn do_go(&mut self, noun: &String) -> String {
-        let (output, obj_opt) = self.object_visible("Where do you want to go", noun);
+        let (output, obj_opt) = self.object_visible(noun);
         let player_loc = self.objects[LOC_PLAYER].location;
         match (obj_opt, player_loc) {
             (None, _) => output,
             (Some(obj_loc), Some(player_loc)) if obj_loc == player_loc => {
-                "You are looking at yourself\n".to_string()
+                "You are at the location\n".to_string()
             }
             (Some(obj_loc), _) => {
                 self.objects[LOC_PLAYER].location = Some(obj_loc);
@@ -315,7 +258,7 @@ impl World {
         }
     }
 
-    // Added new functions
+    /// Player asks the specified object
     pub fn do_ask(&mut self, noun: &String) -> String {
         let player_loc = self.player_here();
         let (output, object_index) =
@@ -323,6 +266,7 @@ impl World {
         output + self.move_object(object_index, Some(LOC_PLAYER)).as_str()
     }
 
+    /// Player gives the specified object
     pub fn do_give(&mut self, noun: &String) -> String {
         let player_loc = self.player_here();
 
@@ -331,6 +275,7 @@ impl World {
         output + self.move_object(object_index, Some(LOC_PLAYER)).as_str()
     }
 
+    /// Player drops the specified object
     pub fn do_drop(&mut self, noun: &String) -> String {
         let (output, object_index) =
             self.get_possession(Some(LOC_PLAYER), Command::Drop("drop".to_string()), noun);
@@ -339,8 +284,9 @@ impl World {
         output + self.move_object(object_index, player_loc).as_str()
     }
 
+    /// Player gets the specified object
     pub fn do_get(&mut self, noun: &String) -> String {
-        let (output_vis, obj_opt) = self.object_visible("Where do you want to go", noun);
+        let (output_vis, obj_opt) = self.object_visible(noun);
 
         let obj_loc = obj_opt.and_then(|a| self.objects[a].location);
 
@@ -356,13 +302,11 @@ impl World {
                         self.objects[object_idx].description
                     )
             }
-            (Some(_), Some(obj_loc)) if obj_loc == LOC_COPILOT => {
-                output_vis + "You are rude, Please ask nicely.\n"
-            }
             (obj_opt, _) => self.move_object(obj_opt, Some(LOC_PLAYER)),
         }
     }
 
+    /// Player checks the inventory
     pub fn do_inventory(&self) -> String {
         let (list_string, count) = self.list_objects(LOC_PLAYER);
         if count == 0 {
@@ -373,6 +317,7 @@ impl World {
         }
     }
 
+    /// Returns the index of the object if it is visible
     pub fn describe_move(&self, obj_opt: Option<usize>, to: Option<usize>) -> String {
         let obj_loc = obj_opt.and_then(|a| self.objects[a].location);
         let player_loc = self.objects[LOC_PLAYER].location;
@@ -384,22 +329,15 @@ impl World {
                 format!("You have dropped {}.\n", self.objects[obj_opt_idx].name)
             }
             (Some(obj_opt_idx), _, Some(to_idx), _) if to_idx != LOC_PLAYER => {
-                if to_idx == LOC_COPILOT {
-                    format!(
-                        "You gave {} to {}.\n",
-                        self.objects[obj_opt_idx].name, self.objects[to_idx].name
-                    )
-                } else {
-                    format!(
-                        "You put {} in {}.\n",
-                        self.objects[obj_opt_idx].name, self.objects[to_idx].name
-                    )
-                }
+                format!(
+                    "You put {} in {}.\n",
+                    self.objects[obj_opt_idx].name, self.objects[to_idx].name
+                )
             }
             (Some(obj_opt_idx), Some(obj_loc_idx), _, Some(player_loc_idx))
                 if obj_loc_idx == player_loc_idx =>
             {
-                format!("You have to pick up {}.\n", self.objects[obj_opt_idx].name)
+                format!("You pick up the {}.\n", self.objects[obj_opt_idx].name)
             }
             (Some(obj_opt_idx), Some(obj_loc_idx), _, _) => format!(
                 "You got {} from {}.\n",
@@ -410,13 +348,14 @@ impl World {
         }
     }
 
+    /// Moves the object to the specified location
     pub fn move_object(&mut self, obj_opt: Option<usize>, to: Option<usize>) -> String {
         let obj_loc = obj_opt.and_then(|a| self.objects[a].location);
 
         match (obj_opt, obj_loc, to) {
             (None, _, _) => "".to_string(),
             (Some(_), _, None) => "No one is present here to give.\n".to_string(),
-            (Some(_), None, Some(_)) => "Ooff, that is too heavy.\n".to_string(),
+            (Some(_), None, Some(_)) => "You have reached your inventory limit!! Please drop something in your inventory before picking it up!!\n".to_string(),
             (Some(obj_idx), Some(_), Some(to_idx)) => {
                 let output = self.describe_move(obj_opt, to);
                 self.objects[obj_idx].location = Some(to_idx);
@@ -424,6 +363,7 @@ impl World {
             }
         }
     }
+    /// Returns the index of the object if it is visible
     pub fn get_possession(
         &mut self,
         from: Option<usize>,
@@ -435,11 +375,11 @@ impl World {
 
         match (from, object_idx, object_loc) {
             (None, _, _) => (
-                format!("I am not understanding what is needed {command}.\n"),
+                format!("I don't understand what is needed {command}.\n"),
                 None,
             ),
             (Some(_), None, _) => (
-                format!("I am not getting what is required {}.\n", command),
+                format!("Please use correct command for: {}.\n", command),
                 None,
             ),
             (Some(from_idx), Some(object_idx), _) if object_idx == from_idx => (
@@ -481,14 +421,13 @@ impl World {
         }
     }
 
+    /// Returns player's location
     pub fn player_here(&self) -> Option<usize> {
         let mut player_loc: Option<usize> = None;
 
         for (pos, object) in self.objects.iter().enumerate() {
             match (pos, object.location) {
-                (_, obj_loc)
-                    if (obj_loc == self.objects[LOC_PLAYER].location) && (pos == LOC_COPILOT) =>
-                {
+                (_, obj_loc) if (obj_loc == self.objects[LOC_PLAYER].location) => {
                     player_loc = Some(pos);
                     break;
                 }
