@@ -46,6 +46,7 @@ pub struct Object {
     pub name: String,
     pub description: String,
     pub location: Option<usize>,
+    pub destination: Option<usize>,
 }
 
 /// The world struct
@@ -62,16 +63,19 @@ impl World {
                     name: "Forest".to_string(),
                     description: "Look out for tree people".to_string(),
                     location: None,
+                    destination: None,
                 },
                 Object {
                     name: "Dungeons".to_string(),
                     description: "Be aware of the trolls in the dungeon.".to_string(),
                     location: None,
+                    destination: None,
                 },
                 Object {
                     name: "Cave".to_string(),
                     description: "Watch out for bats and look for light.".to_string(),
                     location: None,
+                    destination: None,
                 },
                 Object {
                     name: "Tavern".to_string(),
@@ -79,26 +83,67 @@ impl World {
                         "The tavern is empty. But the fire is still burning in the fireplace."
                             .to_string(),
                     location: None,
+                    destination: None,
                 },
                 Object {
                     name: "Player".to_string(),
                     description: "You".to_string(),
                     location: Some(LOC_FOREST),
+                    destination: None,
+                },
+                Object {
+                    name: "Forest path".to_string(),
+                    description: "A path leading out of the forest".to_string(),
+                    location: Some(LOC_FOREST),
+                    destination: Some(LOC_TAVERN),
+                },
+                Object {
+                    name: "Tavern path".to_string(),
+                    description: "A path back to the forest".to_string(),
+                    location: Some(LOC_TAVERN),
+                    destination: Some(LOC_FOREST),
+                },
+                Object {
+                    name: "Dungeon path".to_string(),
+                    description: "A path leading to the Dungeons".to_string(),
+                    location: Some(LOC_TAVERN),
+                    destination: Some(LOC_DUNGEONS),
+                },
+                Object {
+                    name: "Tavern path 2".to_string(),
+                    description: "A path leading to the Tavern".to_string(),
+                    location: Some(LOC_DUNGEONS),
+                    destination: Some(LOC_TAVERN),
+                },
+                Object {
+                    name: "Cave path".to_string(),
+                    description: "A path into a cave".to_string(),
+                    location: Some(LOC_DUNGEONS),
+                    destination: Some(LOC_CAVE),
+                },
+                Object {
+                    name: "Dungeon path 2".to_string(),
+                    description: "A path into the dungeons".to_string(),
+                    location: Some(LOC_CAVE),
+                    destination: Some(LOC_DUNGEONS),
                 },
                 Object {
                     name: "Sword".to_string(),
                     description: "A rusty sword.".to_string(),
                     location: Some(LOC_DUNGEONS),
+                    destination: None,
                 },
                 Object {
                     name: "Bow".to_string(),
                     description: "A bow.".to_string(),
                     location: Some(LOC_TAVERN),
+                    destination: None,
                 },
                 Object {
                     name: "Bones".to_string(),
                     description: "Bones of some animal.".to_string(),
                     location: Some(LOC_CAVE),
+                    destination: None,
                 },
             ],
         }
@@ -131,10 +176,11 @@ impl World {
             .and_then(|a| self.objects[a].location)
             .and_then(|b| self.objects[b].location);
         let player_loc = self.objects[LOC_PLAYER].location;
+        let passage = self.passage_index(player_loc, obj_index);
 
-        match (obj_index, obj_loc, obj_container_loc, player_loc) {
+        match (obj_index, obj_loc, obj_container_loc, player_loc, passage) {
             // Return none if not a valid command
-            (None, _, _, _) => {
+            (None, _, _, _, _) => {
                 //https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect
                 //https://doc.rust-lang.org/std/iter/struct.Map.html?search=collect
                 //https://doc.rust-lang.org/alloc/slice/trait.Join.html
@@ -148,14 +194,14 @@ impl World {
                 let location_names: String = self
                     .objects
                     .iter()
-                    .filter(|object| object.location.is_none())
+                    .filter(|object| object.destination.is_none() && object.location.is_none())
                     .map(|object| object.name.clone())
                     .collect::<Vec<_>>()
                     .join(", ");
                 let object_names: String = self
                     .objects
                     .iter()
-                    .filter(|object| object.location.is_some())
+                    .filter(|object| object.location.is_some() && object.destination.is_none())
                     .map(|object| object.name.clone())
                     .collect::<Vec<_>>()
                     .join(", ");
@@ -166,21 +212,23 @@ impl World {
                 (output, None)
             }
             // Object is player
-            (Some(obj_index), _, _, _) if obj_index == LOC_PLAYER => (output, Some(obj_index)),
+            (Some(obj_index), _, _, _, _) if obj_index == LOC_PLAYER => (output, Some(obj_index)),
             // Object is the location where the player currently is
-            (Some(obj_index), _, _, Some(player_loc)) if obj_index == player_loc => {
+            (Some(obj_index), _, _, Some(player_loc), _) if obj_index == player_loc => {
                 (output, Some(obj_index))
             }
             // Object is held by the player
-            (Some(obj_index), Some(obj_loc), _, _) if obj_loc == LOC_PLAYER => {
+            (Some(obj_index), Some(obj_loc), _, _, _) if obj_loc == LOC_PLAYER => {
                 (output, Some(obj_index))
             }
             // Object is in the same location as the player
-            (Some(obj_index), Some(obj_loc), _, Some(player_loc)) if obj_loc == player_loc => {
+            (Some(obj_index), Some(obj_loc), _, Some(player_loc), _) if obj_loc == player_loc => {
                 (output, Some(obj_index))
             }
             // Object is a location
-            (Some(obj_index), obj_loc, _, _) if obj_loc.is_none() => (output, Some(obj_index)),
+            (Some(obj_index), None, _, _, Some(_)) if obj_loc.is_none() => {
+                (output, Some(obj_index))
+            }
             // Invalid object name
             _ => {
                 output = format!("You don't see any '{}' here.\n", noun);
@@ -245,16 +293,25 @@ impl World {
     /// Player goes to the specified location
     pub fn do_go(&mut self, noun: &String) -> String {
         let (output, obj_opt) = self.object_visible(noun);
+        let obj_loc = obj_opt.and_then(|a| self.objects[a].location);
+        let obj_dst = obj_opt.and_then(|a| self.objects[a].destination);
         let player_loc = self.objects[LOC_PLAYER].location;
-        match (obj_opt, player_loc) {
-            (None, _) => output,
-            (Some(obj_loc), Some(player_loc)) if obj_loc == player_loc => {
-                "You are at the location\n".to_string()
-            }
-            (Some(obj_loc), _) => {
-                self.objects[LOC_PLAYER].location = Some(obj_loc);
+        let passage = self.passage_index(player_loc, obj_opt);
+        match (obj_opt, obj_loc, obj_dst, player_loc, passage) {
+            (None, _, _, _, _) => output,
+            (Some(obj), None, _, _, Some(_)) => {
+                self.objects[LOC_PLAYER].location = Some(obj);
                 "OK.\n\n".to_string() + &self.do_look("around")
             }
+            (Some(_), Some(obj_loc), _, Some(player_loc), None) if obj_loc != player_loc => {
+                format!("You don't see any {} here.\n", noun)
+            }
+            (Some(_), Some(_), Some(obj_dst), Some(_), None) => {
+                self.objects[LOC_PLAYER].location = Some(obj_dst);
+                "OK.\n\n".to_string() + &self.do_look("around")
+            }
+            (Some(_), _, None, Some(_), None) => "You are already at the location.\n".to_string(),
+            _ => output,
         }
     }
 
@@ -363,6 +420,32 @@ impl World {
             }
         }
     }
+
+    /// Gets the index of the passage if visible
+    fn passage_index(&self, from: Option<usize>, to: Option<usize>) -> Option<usize> {
+        let mut result: Option<usize> = None;
+
+        match (from, to) {
+            (Some(from), Some(to)) => {
+                for (pos, object) in self.objects.iter().enumerate() {
+                    let obj_loc = object.location;
+                    let obj_dest = object.destination;
+                    match (obj_loc, obj_dest) {
+                        (Some(location), Some(destination))
+                            if location == from && destination == to =>
+                        {
+                            result = Some(pos);
+                            break;
+                        }
+                        _ => continue,
+                    }
+                }
+                result
+            }
+            _ => result,
+        }
+    }
+
     /// Returns the index of the object if it is visible
     pub fn get_possession(
         &mut self,
