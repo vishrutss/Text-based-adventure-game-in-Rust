@@ -11,7 +11,19 @@ const LOC_CAVE: usize = 2;
 const LOC_TAVERN: usize = 3;
 const LOC_PLAYER: usize = 4;
 
-/// Command enum
+///Distance enum containing all the distance prompts
+#[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
+pub enum Distance {
+    Player,
+    Held,
+    Location,
+    Here,
+    OverThere,
+    NotHere,
+    Unknown,
+}
+
+/// Command enum containing all the command prompts
 pub enum Command {
     Ask(String),
     Drop(String),
@@ -93,7 +105,8 @@ impl World {
                 },
                 Object {
                     name: "Forest path".to_string(),
-                    description: "A path leading out of the forest".to_string(),
+                    description: "A path leading out of the forest leading to an old Tavern"
+                        .to_string(),
                     location: Some(LOC_FOREST),
                     destination: Some(LOC_TAVERN),
                 },
@@ -155,10 +168,17 @@ impl World {
     }
 
     /// Get the index of the object
-    fn object_index(&self, noun: &String) -> Option<usize> {
+    fn object_index(
+        &self,
+        noun: &String,
+        from: Option<usize>,
+        max_distance: Distance,
+    ) -> Option<usize> {
         let mut result: Option<usize> = None;
         for (position, object) in self.objects.iter().enumerate() {
-            if self.object_with_name(object, noun) {
+            if self.object_with_name(object, noun)
+                && self.get_distance(from, Some(position)) <= max_distance
+            {
                 result = Some(position);
                 break;
             }
@@ -166,21 +186,14 @@ impl World {
         result
     }
 
-    /// Check if the object is visible
+    /// Checks if the object is visible
     fn object_visible(&self, noun: &String) -> (String, Option<usize>) {
-        let mut output = String::new();
+        let obj_over_there = self.object_index(noun, Some(LOC_PLAYER), Distance::OverThere);
+        let obj_not_here = self.object_index(noun, Some(LOC_PLAYER), Distance::NotHere);
 
-        let obj_index = self.object_index(noun);
-        let obj_loc = obj_index.and_then(|a| self.objects[a].location);
-        let obj_container_loc = obj_index
-            .and_then(|a| self.objects[a].location)
-            .and_then(|b| self.objects[b].location);
-        let player_loc = self.objects[LOC_PLAYER].location;
-        let passage = self.passage_index(player_loc, obj_index);
-
-        match (obj_index, obj_loc, obj_container_loc, player_loc, passage) {
+        match (obj_over_there, obj_not_here) {
             // Return none if not a valid command
-            (None, _, _, _, _) => {
+            (None, None) => {
                 //https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect
                 //https://doc.rust-lang.org/std/iter/struct.Map.html?search=collect
                 //https://doc.rust-lang.org/alloc/slice/trait.Join.html
@@ -205,35 +218,17 @@ impl World {
                     .map(|object| object.name.clone())
                     .collect::<Vec<_>>()
                     .join(", ");
-                output = format!(
-                    "Invalid command! Available locations: {}\n\t\t Available objects: {}",
-                    location_names, object_names
-                );
-                (output, None)
+                (
+                    format!(
+                        "Invalid command! Available locations: {}\n\t\t Available objects: {}",
+                        location_names, object_names
+                    ),
+                    None,
+                )
             }
-            // Object is player
-            (Some(obj_index), _, _, _, _) if obj_index == LOC_PLAYER => (output, Some(obj_index)),
-            // Object is the location where the player currently is
-            (Some(obj_index), _, _, Some(player_loc), _) if obj_index == player_loc => {
-                (output, Some(obj_index))
-            }
-            // Object is held by the player
-            (Some(obj_index), Some(obj_loc), _, _, _) if obj_loc == LOC_PLAYER => {
-                (output, Some(obj_index))
-            }
-            // Object is in the same location as the player
-            (Some(obj_index), Some(obj_loc), _, Some(player_loc), _) if obj_loc == player_loc => {
-                (output, Some(obj_index))
-            }
-            // Object is a location
-            (Some(obj_index), None, _, _, Some(_)) if obj_loc.is_none() => {
-                (output, Some(obj_index))
-            }
+            (None, Some(_)) => (format!("You don't see any '{}' here.\n", noun), None),
             // Invalid object name
-            _ => {
-                output = format!("You don't see any '{}' here.\n", noun);
-                (output, None)
-            }
+            _ => (String::new(), obj_over_there),
         }
     }
 
@@ -242,17 +237,12 @@ impl World {
         let mut result = String::new();
         let mut count: u64 = 0;
         for (pos, object) in self.objects.iter().enumerate() {
-            match (pos, object.location) {
-                (pos, _) if pos == LOC_PLAYER => continue,
-                (_, None) => continue,
-                (_, Some(obj_location)) if obj_location == location => {
-                    if count == 0 {
-                        result += "You see:\n";
-                    }
-                    count += 1;
-                    result = result + &format!("{}\n", object.description);
+            if pos != LOC_PLAYER && self.is_containing(Some(location), Some(pos)) {
+                if count == 0 {
+                    result += "You see:\n";
                 }
-                _ => continue,
+                count += 1;
+                result += &format!("{}\n", object.description);
             }
         }
         (result, count)
@@ -265,7 +255,7 @@ impl World {
             Command::Go(noun) => self.do_go(noun),
             Command::Quit => "Quitting.\nThank you for playing!".to_string(),
             Command::Unknown(_) => {
-                "Please provide the right command. Available commands: \nlook <add place>\ngo <add place>\nget <item name>\ndrop <item name>\nquit\n".to_string()
+                "Please provide the right command. Available commands: \nlook <add place>\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
             }
             Command::Ask(noun) =>self.do_ask(noun),
             Command::Drop(noun) =>self.do_drop(noun),
@@ -293,25 +283,25 @@ impl World {
     /// Player goes to the specified location
     pub fn do_go(&mut self, noun: &String) -> String {
         let (output, obj_opt) = self.object_visible(noun);
-        let obj_loc = obj_opt.and_then(|a| self.objects[a].location);
-        let obj_dst = obj_opt.and_then(|a| self.objects[a].destination);
-        let player_loc = self.objects[LOC_PLAYER].location;
-        let passage = self.passage_index(player_loc, obj_opt);
-        match (obj_opt, obj_loc, obj_dst, player_loc, passage) {
-            (None, _, _, _, _) => output,
-            (Some(obj), None, _, _, Some(_)) => {
-                self.objects[LOC_PLAYER].location = Some(obj);
-                "OK.\n\n".to_string() + &self.do_look("around")
+
+        match self.get_distance(Some(LOC_PLAYER), obj_opt) {
+            Distance::OverThere => {
+                self.objects[LOC_PLAYER].location = obj_opt;
+                "OK.\n".to_string() + &self.do_look("around")
             }
-            (Some(_), Some(obj_loc), _, Some(player_loc), None) if obj_loc != player_loc => {
-                format!("You don't see any {} here.\n", noun)
+            Distance::NotHere => {
+                format!("You don't see any '{}' here.\n", noun)
             }
-            (Some(_), Some(_), Some(obj_dst), Some(_), None) => {
-                self.objects[LOC_PLAYER].location = Some(obj_dst);
-                "OK.\n\n".to_string() + &self.do_look("around")
+            Distance::Unknown => output,
+            _ => {
+                let obj_dist = obj_opt.and_then(|a| self.objects[a].destination);
+                if obj_dist.is_some() {
+                    self.objects[LOC_PLAYER].location = obj_dist;
+                    "OK.\n".to_string() + &self.do_look("around")
+                } else {
+                    "You are already there.\n".to_string()
+                }
             }
-            (Some(_), _, None, Some(_), None) => "You are already at the location.\n".to_string(),
-            _ => output,
         }
     }
 
@@ -343,23 +333,22 @@ impl World {
 
     /// Player gets the specified object
     pub fn do_get(&mut self, noun: &String) -> String {
-        let (output_vis, obj_opt) = self.object_visible(noun);
+        let (output, obj_opt) = self.object_visible(noun);
 
-        let obj_loc = obj_opt.and_then(|a| self.objects[a].location);
+        let player_to_obj = self.get_distance(Some(LOC_PLAYER), obj_opt);
 
-        match (obj_opt, obj_loc) {
-            (None, _) => output_vis,
-            (Some(object_idx), _) if object_idx == LOC_PLAYER => {
-                output_vis + "Please don't do that to yourself.\n"
-            }
-            (Some(object_idx), Some(obj_loc)) if obj_loc == LOC_PLAYER => {
-                output_vis
+        match (player_to_obj, obj_opt) {
+            (Distance::Player, _) => output + "Invalid!!",
+            (Distance::Held, Some(obj_index)) => {
+                output
                     + &format!(
-                        "You already have this: {}.\n",
-                        self.objects[object_idx].description
+                        "You already have: {}.\n",
+                        self.objects[obj_index].description
                     )
             }
-            (obj_opt, _) => self.move_object(obj_opt, Some(LOC_PLAYER)),
+            (Distance::OverThere, _) => output + "Too far away, move closer.\n",
+            (Distance::Unknown, _) => output,
+            _ => self.move_object(obj_opt, Some(LOC_PLAYER)),
         }
     }
 
@@ -367,10 +356,35 @@ impl World {
     pub fn do_inventory(&self) -> String {
         let (list_string, count) = self.list_objects(LOC_PLAYER);
         if count == 0 {
-            //format!("You currently do not have anything in your hands.\n")
-            "You currently do not have anything in your hands.\n".to_string()
+            "You currently do not have anything in your inventory.\n".to_string()
         } else {
             list_string
+        }
+    }
+
+    /// Returns true or false depending on if the object is contained by another object
+    pub fn is_containing(&self, container: Option<usize>, object: Option<usize>) -> bool {
+        object.is_some() && (object.and_then(|a| self.objects[a].location) == container)
+    }
+
+    /// Returns the distance of one object in relation to another object
+    pub fn get_distance(&self, from: Option<usize>, to: Option<usize>) -> Distance {
+        let from_loc = from.and_then(|a| self.objects[a].location);
+
+        if to.is_none() {
+            Distance::Unknown
+        } else if to == from {
+            Distance::Player
+        } else if self.is_containing(from, to) {
+            Distance::Held
+        } else if self.is_containing(to, from) {
+            Distance::Location
+        } else if from_loc.is_some() && self.is_containing(from_loc, to) {
+            Distance::Here
+        } else if self.passage_index(from_loc, to).is_some() {
+            Distance::OverThere
+        } else {
+            Distance::NotHere
         }
     }
 
@@ -453,54 +467,26 @@ impl World {
         command: Command,
         noun: &String,
     ) -> (String, Option<usize>) {
-        let object_idx = self.object_index(noun);
-        let object_loc = object_idx.and_then(|a| self.objects[a].location);
+        let object_held = self.object_index(noun, from, Distance::Held);
+        let object_not_here = self.object_index(noun, from, Distance::NotHere);
 
-        match (from, object_idx, object_loc) {
+        match (from, object_held, object_not_here) {
             (None, _, _) => (
                 format!("I don't understand what is needed {command}.\n"),
                 None,
             ),
-            (Some(_), None, _) => (
+            (Some(_), None, None) => (
                 format!("Please use correct command for: {}.\n", command),
                 None,
             ),
-            (Some(from_idx), Some(object_idx), _) if object_idx == from_idx => (
-                format!(
-                    "It is illegal to do this: {}.\n",
-                    self.objects[object_idx].name
-                ),
-                None,
-            ),
-            (Some(_), Some(object_idx), None) => (
-                format!(
-                    "It is not possible to do that {}.\n",
-                    self.objects[object_idx].name
-                ),
-                None,
-            ),
-            (Some(from_idx), Some(object_idx), Some(object_loc_idx))
-                if object_loc_idx != from_idx =>
-            {
-                if from_idx == LOC_PLAYER {
-                    (
-                        format!(
-                            "You are not holding any {}.\n",
-                            self.objects[object_idx].name
-                        ),
-                        None,
-                    )
-                } else {
-                    (
-                        format!(
-                            "There appears to be no {} you can get from {}.\n",
-                            noun, self.objects[from_idx].name
-                        ),
-                        None,
-                    )
-                }
+            (Some(from), None, Some(_)) if from == LOC_PLAYER => {
+                (format!("You are not holding any {}.\n", noun), None)
             }
-            _ => ("".to_string(), object_idx),
+            (Some(from), Some(object), _) if object == from => (
+                format!("It is illegal to do this: {}.\n", self.objects[object].name),
+                None,
+            ),
+            _ => ("".to_string(), object_held),
         }
     }
 
