@@ -3,7 +3,9 @@
 //! that are crucual for running the game
 
 use std::fmt;
+use std::fs::read_to_string;
 use std::io::{self, Write};
+use std::path::Path;
 // Indices of all the objects in the game
 const LOC_FOREST: usize = 0;
 const LOC_DUNGEONS: usize = 1;
@@ -194,6 +196,20 @@ impl World {
                     destination: None,
                 },
             ],
+        }
+    }
+
+    // We are adding reading from file, first step is to read from file.
+    pub fn read_from_file(game_file: &str) -> Result<World, std::io::Error> {
+        let game_file_path = Path::new(game_file);
+        let game_file_data_res = read_to_string(game_file_path);
+
+        match game_file_data_res {
+            Ok(_) => {
+                // As of now just returning the new World.
+                Ok(World::new())
+            }
+            Err(file_err) => Err(file_err),
         }
     }
 
