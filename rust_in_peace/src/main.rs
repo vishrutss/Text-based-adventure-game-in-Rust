@@ -1,10 +1,31 @@
 use clearscreen::clear;
 use regex::Regex;
-use std::io;
+use std::{io, println};
+
+const GAME_FILE_LOCATION: &str = "./game_file.ron";
 
 pub mod game_lib;
 
 fn main() {
+    let world_result = init_game(GAME_FILE_LOCATION);
+
+    match world_result {
+        Ok(world) => {
+            // Here we will run the game
+            do_game(world);
+        }
+        Err(file_err) => {
+            println!("Error: {}", file_err);
+        }
+    }
+}
+fn init_game(file_location: &str) -> Result<game_lib::World, std::io::Error> {
+    //Here we will read the file and return the world we created.
+
+    game_lib::World::read_from_file(file_location)
+}
+
+fn do_game(mut world: game_lib::World) {
     println!("Hello, Player!\n");
     println!("Welcome to Rust In Peace\n");
     println!("Would you like to start the game? (Y/N)");
@@ -30,7 +51,7 @@ fn main() {
     println!("You find yourself lost in a gloomy forest. You see a column of smoke rising in the sky. It seems to be very far away.");
 
     let mut command: game_lib::Command;
-    let mut world = game_lib::World::new();
+    //let mut world = game_lib::World::new();
     let mut output: String;
 
     // Main game loop
