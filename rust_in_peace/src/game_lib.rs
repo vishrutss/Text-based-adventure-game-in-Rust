@@ -55,10 +55,18 @@ impl fmt::Display for Command {
 
 /// The object struct
 pub struct Object {
-    pub name: String,
+    pub label: Vec<String>,
     pub description: String,
     pub location: Option<usize>,
     pub destination: Option<usize>,
+}
+
+/// Handles any ambiguous directions
+#[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
+pub enum AmbiguousOption<T> {
+    None,
+    Some(T),
+    Ambiguous,
 }
 
 /// The world struct
@@ -72,25 +80,25 @@ impl World {
         World {
             objects: vec![
                 Object {
-                    name: "Forest".to_string(),
+                    label: vec!["Forest".to_string()],
                     description: "Look out for tree people".to_string(),
                     location: None,
                     destination: None,
                 },
                 Object {
-                    name: "Dungeons".to_string(),
+                    label: vec!["Dungeons".to_string()],
                     description: "Be aware of the trolls in the dungeon.".to_string(),
                     location: None,
                     destination: None,
                 },
                 Object {
-                    name: "Cave".to_string(),
+                    label: vec!["Cave".to_string()],
                     description: "Watch out for bats and look for light.".to_string(),
                     location: None,
                     destination: None,
                 },
                 Object {
-                    name: "Tavern".to_string(),
+                    label: vec!["Tavern".to_string()],
                     description:
                         "The tavern is empty. But the fire is still burning in the fireplace."
                             .to_string(),
@@ -98,63 +106,90 @@ impl World {
                     destination: None,
                 },
                 Object {
-                    name: "Player".to_string(),
+                    label: vec!["Player".to_string()],
                     description: "You".to_string(),
                     location: Some(LOC_FOREST),
                     destination: None,
                 },
                 Object {
-                    name: "Forest path".to_string(),
+                    label: vec!["Sword".to_string()],
+                    description: "A rusty sword.".to_string(),
+                    location: Some(LOC_DUNGEONS),
+                    destination: None,
+                },
+                Object {
+                    label: vec!["Bow".to_string()],
+                    description: "A bow.".to_string(),
+                    location: Some(LOC_TAVERN),
+                    destination: None,
+                },
+                Object {
+                    label: vec!["Bones".to_string()],
+                    description: "Bones of some animal.".to_string(),
+                    location: Some(LOC_CAVE),
+                    destination: None,
+                },
+                Object {
+                    label: vec!["North".to_string()],
                     description: "A path leading out of the forest leading to an old Tavern"
                         .to_string(),
                     location: Some(LOC_FOREST),
                     destination: Some(LOC_TAVERN),
                 },
                 Object {
-                    name: "Tavern path".to_string(),
+                    label: vec!["South".to_string()],
                     description: "A path back to the forest".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: Some(LOC_FOREST),
                 },
                 Object {
-                    name: "Dungeon path".to_string(),
+                    label: vec!["East".to_string()],
                     description: "A path leading to the Dungeons".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: Some(LOC_DUNGEONS),
                 },
                 Object {
-                    name: "Tavern path 2".to_string(),
+                    label: vec!["West".to_string()],
                     description: "A path leading to the Tavern".to_string(),
                     location: Some(LOC_DUNGEONS),
                     destination: Some(LOC_TAVERN),
                 },
                 Object {
-                    name: "Cave path".to_string(),
+                    label: vec!["North".to_string()],
                     description: "A path into a cave".to_string(),
                     location: Some(LOC_DUNGEONS),
                     destination: Some(LOC_CAVE),
                 },
                 Object {
-                    name: "Dungeon path 2".to_string(),
+                    label: vec!["South".to_string()],
                     description: "A path into the dungeons".to_string(),
                     location: Some(LOC_CAVE),
                     destination: Some(LOC_DUNGEONS),
                 },
                 Object {
-                    name: "Sword".to_string(),
-                    description: "A rusty sword.".to_string(),
-                    location: Some(LOC_DUNGEONS),
+                    label: vec!["West".to_string(), "East".to_string(), "South".to_string()],
+                    description: "You see nothing but trees. There seems to be no other path."
+                        .to_string(),
+                    location: Some(LOC_FOREST),
                     destination: None,
                 },
                 Object {
-                    name: "Bow".to_string(),
-                    description: "A bow.".to_string(),
+                    label: vec!["West".to_string(), "North".to_string()],
+                    description: "There seems to be no other path.".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: None,
                 },
                 Object {
-                    name: "Bones".to_string(),
-                    description: "Bones of some animal.".to_string(),
+                    label: vec!["East".to_string(), "South".to_string()],
+                    description:
+                        "You see only big rocks and boulders. There seems to be no other path."
+                            .to_string(),
+                    location: Some(LOC_DUNGEONS),
+                    destination: None,
+                },
+                Object {
+                    label: vec!["East".to_string(), "North".to_string(), "West".to_string()],
+                    description: "There seems to be no other path.".to_string(),
                     location: Some(LOC_CAVE),
                     destination: None,
                 },
@@ -162,25 +197,35 @@ impl World {
         }
     }
 
-    /// Check if the object has a name
-    fn object_with_name(&self, object: &Object, noun: &String) -> bool {
-        *noun == object.name.to_lowercase()
+    /// Check if the object has a label
+    fn object_with_label(&self, object: &Object, noun: &str) -> bool {
+        let mut result = false;
+        for (_, label) in object.label.iter().enumerate() {
+            if label.to_lowercase() == noun.to_lowercase() {
+                result = true;
+                break;
+            }
+        }
+        result
     }
 
     /// Get the index of the object
     fn object_index(
         &self,
-        noun: &String,
+        noun: &str,
         from: Option<usize>,
         max_distance: Distance,
-    ) -> Option<usize> {
-        let mut result: Option<usize> = None;
+    ) -> AmbiguousOption<usize> {
+        let mut result: AmbiguousOption<usize> = AmbiguousOption::None;
         for (position, object) in self.objects.iter().enumerate() {
-            if self.object_with_name(object, noun)
+            if self.object_with_label(object, noun)
                 && self.get_distance(from, Some(position)) <= max_distance
             {
-                result = Some(position);
-                break;
+                if result == AmbiguousOption::None {
+                    result = AmbiguousOption::Some(position);
+                } else {
+                    result = AmbiguousOption::Ambiguous;
+                }
             }
         }
         result
@@ -193,42 +238,20 @@ impl World {
 
         match (obj_over_there, obj_not_here) {
             // Return none if not a valid command
-            (None, None) => {
-                //https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect
-                //https://doc.rust-lang.org/std/iter/struct.Map.html?search=collect
-                //https://doc.rust-lang.org/alloc/slice/trait.Join.html
-                /*
-                The line of code below uses iter() method to iterate over each location in world.locations,
-                then uses filter() to select only objects that are locations,
-                then uses map() method to create a new iterator that clones each location’s name,
-                and finally uses collect() method to collect all the cloned names into a vector and join them
-                with commas using join() method.
-                */
-                let location_names: String = self
-                    .objects
-                    .iter()
-                    .filter(|object| object.destination.is_none() && object.location.is_none())
-                    .map(|object| object.name.clone())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                let object_names: String = self
-                    .objects
-                    .iter()
-                    .filter(|object| object.location.is_some() && object.destination.is_none())
-                    .map(|object| object.name.clone())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                (
-                    format!(
-                        "Invalid command! Available locations: {}\n\t\t Available objects: {}",
-                        location_names, object_names
-                    ),
-                    None,
-                )
+            (AmbiguousOption::None, AmbiguousOption::None) => (
+                "Invalid command! Available directions: North, East, West, South.".to_string(),
+                None,
+            ),
+            (AmbiguousOption::None, AmbiguousOption::Some(_)) => {
+                (format!("You don't see any '{}' here.\n", noun), None)
             }
-            (None, Some(_)) => (format!("You don't see any '{}' here.\n", noun), None),
-            // Invalid object name
-            _ => (String::new(), obj_over_there),
+            // Ambiguous object name
+            (AmbiguousOption::Ambiguous, _)
+            | (AmbiguousOption::None, AmbiguousOption::Ambiguous) => (
+                format!("Please be more specific about which {} you mean.\n", noun),
+                None,
+            ),
+            (AmbiguousOption::Some(index), _) => (String::new(), Some(index)),
         }
     }
 
@@ -272,7 +295,7 @@ impl World {
                 let (list, _) = self.list_objects(self.objects[LOC_PLAYER].location.unwrap());
                 format!(
                     " You are in the {}\n {}.\n",
-                    self.objects[self.objects[LOC_PLAYER].location.unwrap()].name,
+                    self.objects[self.objects[LOC_PLAYER].location.unwrap()].label[0],
                     self.objects[self.objects[LOC_PLAYER].location.unwrap()].description
                 ) + list.as_str()
             }
@@ -397,22 +420,22 @@ impl World {
             (Some(obj_opt_idx), _, Some(to_idx), Some(player_loc_idx))
                 if to_idx == player_loc_idx =>
             {
-                format!("You have dropped {}.\n", self.objects[obj_opt_idx].name)
+                format!("You have dropped {}.\n", self.objects[obj_opt_idx].label[0])
             }
             (Some(obj_opt_idx), _, Some(to_idx), _) if to_idx != LOC_PLAYER => {
                 format!(
                     "You put {} in {}.\n",
-                    self.objects[obj_opt_idx].name, self.objects[to_idx].name
+                    self.objects[obj_opt_idx].label[0], self.objects[to_idx].label[0]
                 )
             }
             (Some(obj_opt_idx), Some(obj_loc_idx), _, Some(player_loc_idx))
                 if obj_loc_idx == player_loc_idx =>
             {
-                format!("You pick up the {}.\n", self.objects[obj_opt_idx].name)
+                format!("You pick up the {}.\n", self.objects[obj_opt_idx].label[0])
             }
             (Some(obj_opt_idx), Some(obj_loc_idx), _, _) => format!(
                 "You got {} from {}.\n",
-                self.objects[obj_opt_idx].name, self.objects[obj_loc_idx].name
+                self.objects[obj_opt_idx].label[0], self.objects[obj_loc_idx].label[0]
             ),
             // This arm should never get hit.
             (None, _, _, _) | (_, None, _, _) => "Please you have to drop something.\n".to_string(),
@@ -475,18 +498,32 @@ impl World {
                 format!("I don't understand what is needed {command}.\n"),
                 None,
             ),
-            (Some(_), None, None) => (
+            (Some(_), AmbiguousOption::None, AmbiguousOption::None) => (
                 format!("Please use correct command for: {}.\n", command),
                 None,
             ),
-            (Some(from), None, Some(_)) if from == LOC_PLAYER => {
+            (Some(from), AmbiguousOption::None, _) if from == LOC_PLAYER => {
                 (format!("You are not holding any {}.\n", noun), None)
             }
-            (Some(from), Some(object), _) if object == from => (
-                format!("It is illegal to do this: {}.\n", self.objects[object].name),
+            (Some(from), AmbiguousOption::Some(object), _) if object == from => (
+                format!(
+                    "It is illegal to do this: {}.\n",
+                    self.objects[object].label[0]
+                ),
                 None,
             ),
-            _ => ("".to_string(), object_held),
+            (Some(_), AmbiguousOption::Ambiguous, _) => (
+                format!(
+                    "Please be more specific about which {} you want to {}.\n",
+                    noun, command
+                ),
+                None,
+            ),
+            (Some(_), AmbiguousOption::Some(object_held), _) => ("".to_string(), Some(object_held)),
+            (Some(_), AmbiguousOption::None, AmbiguousOption::Some(_))
+            | (Some(_), AmbiguousOption::None, AmbiguousOption::Ambiguous) => {
+                (format!("You don't see any {} here.\n", noun), None)
+            }
         }
     }
 
@@ -521,7 +558,13 @@ pub fn parse(input: String) -> Command {
     let mut split_input = input.split_whitespace();
 
     let verb = split_input.next().unwrap_or_default().to_string();
-    let noun = split_input.next().unwrap_or_default().to_string();
+    let noun = split_input.fold("".to_string(), |accum, item| {
+        if accum.is_empty() {
+            accum + item
+        } else {
+            accum + " " + item
+        }
+    });
 
     match verb.as_str() {
         "look" => Command::Look(noun),
