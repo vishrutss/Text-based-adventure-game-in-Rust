@@ -1,0 +1,129 @@
+World (
+  objects:[
+    (
+      label:["Forest"],
+      description:"Look out for tree people",
+      location:None,
+      destination:None
+    ),
+
+    (
+      label:["Dungeons"],
+      description:"Be aware of the trolls in the dungeon.",
+      location:None,
+      destination:None
+    ),
+
+    (
+      label:["Cave"],
+      description:"Watch out for bats and look for light.",
+      location:None,
+      destination:None
+    ),
+
+    (
+      label:["Tavern"],
+      description:"The tavern is empty. But the fire is still burning in the fireplace.",
+      location:None,
+      destination:None
+    ),
+
+    (
+      label:["Player"],
+      description:"You",
+      location:Some(0),
+      destination:None
+    ),
+
+    (
+      label:["Sword"],
+      description:"A rusty sword.",
+      location:Some(1),
+      destination:None
+    ),
+
+    (
+      label:["Bow"],
+      description:"A bow.",
+      location:Some(3),
+      destination:None
+    ),
+
+    (
+      label:["Bones"],
+      description:"Bones of some animal.",
+      location:Some(2),
+      destination:None
+    ),
+
+    (
+      label:["North"],
+      description:"A path leading out of the forest leading to an old Tavern",
+      location:Some(0),
+      destination:Some(3)
+    ),
+
+    (
+      label:["South"],
+      description:"A path back to the forest",
+      location:Some(3),
+      destination:Some(0)
+    ),
+
+    (
+      label:["East"],
+      description:"A path leading to the Dungeons",
+      location:Some(3),
+      destination:Some(1)
+    ),
+
+    (
+      label:["West"],
+      description:"A path leading to the Tavern",
+      location:Some(1),
+      destination:Some(3)
+    ),
+
+    (
+      label:["North"],
+      description:"A path into a cave",
+      location:Some(1),
+      destination:Some(2)
+    ),
+
+    (
+      label:["South"],
+      description:"A path into the dungeons",
+      location:Some(2),
+      destination:Some(1)
+    ),
+    
+    (
+      label:["West","East","South"],
+      description:"You see nothing but trees. There seems to be no other path.",
+      location:Some(0),
+      destination:None
+    ),
+
+    (
+      label:["West","North"],
+      description:"There seems to be no other path.",
+      location:Some(3),
+      destination:None
+    ),
+    
+    (
+      label:["East","South"],
+      description:"You see only big rocks and boulders. There seems to be no other path.",
+      location:Some(1),
+      destination:None
+    ),
+
+    (
+      label:["East","North","West"],
+      description:"There seems to be no other path.",
+      location:Some(2),
+      destination:None
+    )
+  ]
+)
