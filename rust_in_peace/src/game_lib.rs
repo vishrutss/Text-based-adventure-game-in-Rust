@@ -2,10 +2,12 @@
 //! It contains critical functions like get_input(), update_state(), and update_screen()
 //! that are crucual for running the game
 
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs::read_to_string;
 use std::io::{self, Write};
 use std::path::Path;
+
 // Indices of all the objects in the game
 const LOC_FOREST: usize = 0;
 const LOC_DUNGEONS: usize = 1;
@@ -55,6 +57,7 @@ impl fmt::Display for Command {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 /// The object struct
 pub struct Object {
     pub label: Vec<String>,
@@ -71,6 +74,7 @@ pub enum AmbiguousOption<T> {
     Ambiguous,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 /// The world struct
 pub struct World {
     pub objects: Vec<Object>,
