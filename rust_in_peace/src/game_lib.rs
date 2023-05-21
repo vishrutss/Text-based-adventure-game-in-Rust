@@ -3,10 +3,10 @@
 //! that are crucual for running the game
 
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::fs::read_to_string;
 use std::io::{self, Write};
 use std::path::Path;
+use std::{fmt, println};
 
 // Indices of all the objects in the game
 const LOC_FOREST: usize = 0;
@@ -211,7 +211,16 @@ impl World {
         match game_file_data_res {
             Ok(_) => {
                 // As of now just returning the new World.
-                Ok(World::new())
+                // Now we will create a new world
+                let new_world = World::new();
+
+                //Write the serialised output such that we need to put in ron file
+                let serialize_ron = ron::to_string(&new_world).unwrap();
+
+                // Print output
+                println!("Serialized output = {}", serialize_ron);
+
+                Ok(new_world)
             }
             Err(file_err) => Err(file_err),
         }
