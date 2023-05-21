@@ -209,18 +209,28 @@ impl World {
         let game_file_data_res = read_to_string(game_file_path);
 
         match game_file_data_res {
-            Ok(_) => {
+            Ok(game_file_data) => {
                 // As of now just returning the new World.
                 // Now we will create a new world
-                let new_world = World::new();
+                // let new_world = World::new();
+                //
+                // //Write the serialised output such that we need to put in ron file
+                // let serialize_ron = ron::to_string(&new_world).unwrap();
+                //
+                // // Print output
+                // println!("Serialized output = {}", serialize_ron);
 
-                //Write the serialised output such that we need to put in ron file
-                let serialize_ron = ron::to_string(&new_world).unwrap();
+                let deserialized_data: Result<World, ron::error::SpannedError> =
+                    ron::from_str(&game_file_data);
 
-                // Print output
-                println!("Serialized output = {}", serialize_ron);
-
-                Ok(new_world)
+                match deserialized_data {
+                    Ok(deserialized_ron) => Ok(deserialized_ron),
+                    Err(de_err_str) => Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        de_err_str.to_string(),
+                    )),
+                }
+                // Ok(new_world)
             }
             Err(file_err) => Err(file_err),
         }
