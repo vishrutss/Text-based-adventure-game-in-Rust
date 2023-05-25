@@ -64,6 +64,7 @@ pub struct Object {
     pub description: String,
     pub location: Option<usize>,
     pub destination: Option<usize>,
+    pub item: Option<bool>,
 }
 
 /// Handles any ambiguous directions
@@ -90,18 +91,21 @@ impl World {
                     description: "Look out for tree people".to_string(),
                     location: None,
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["Dungeons".to_string()],
                     description: "Be aware of the trolls in the dungeon.".to_string(),
                     location: None,
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["Cave".to_string()],
                     description: "Watch out for bats and look for light.".to_string(),
                     location: None,
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["Tavern".to_string()],
@@ -110,94 +114,109 @@ impl World {
                             .to_string(),
                     location: None,
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["Player".to_string()],
                     description: "You".to_string(),
                     location: Some(LOC_FOREST),
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["Sword".to_string()],
                     description: "A rusty sword.".to_string(),
                     location: Some(LOC_DUNGEONS),
                     destination: None,
+                    item: Some(true),
                 },
                 Object {
                     label: vec!["Bow".to_string()],
                     description: "A bow.".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: None,
+                    item: Some(true),
                 },
                 Object {
                     label: vec!["Bones".to_string()],
                     description: "Bones of some animal.".to_string(),
                     location: Some(LOC_CAVE),
                     destination: None,
+                    item: Some(true),
                 },
                 Object {
                     label: vec!["North".to_string()],
-                    description: "A path leading out of the forest leading to an old Tavern"
+                    description: "A path to the north leading out of the forest leading to an old Tavern"
                         .to_string(),
                     location: Some(LOC_FOREST),
                     destination: Some(LOC_TAVERN),
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["South".to_string()],
-                    description: "A path back to the forest".to_string(),
+                    description: "A path to the south leading back to the forest".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: Some(LOC_FOREST),
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["East".to_string()],
-                    description: "A path leading to the Dungeons".to_string(),
+                    description: "A path to the east leading to the Dungeons".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: Some(LOC_DUNGEONS),
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["West".to_string()],
-                    description: "A path leading to the Tavern".to_string(),
+                    description: "A path to the west leading to the Tavern".to_string(),
                     location: Some(LOC_DUNGEONS),
                     destination: Some(LOC_TAVERN),
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["North".to_string()],
-                    description: "A path into a cave".to_string(),
+                    description: "A path to the north into a cave".to_string(),
                     location: Some(LOC_DUNGEONS),
                     destination: Some(LOC_CAVE),
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["South".to_string()],
-                    description: "A path into the dungeons".to_string(),
+                    description: "A path to the south into the dungeons".to_string(),
                     location: Some(LOC_CAVE),
                     destination: Some(LOC_DUNGEONS),
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["West".to_string(), "East".to_string(), "South".to_string()],
-                    description: "You see nothing but trees. There seems to be no other path."
+                    description: "You see nothing but trees. There is no other path in that direction."
                         .to_string(),
                     location: Some(LOC_FOREST),
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["West".to_string(), "North".to_string()],
-                    description: "There seems to be no other path.".to_string(),
+                    description: "There is no other path in that direction.".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["East".to_string(), "South".to_string()],
                     description:
-                        "You see only big rocks and boulders. There seems to be no other path."
+                        "You see only big rocks and boulders. There is no other path in that direction."
                             .to_string(),
                     location: Some(LOC_DUNGEONS),
                     destination: None,
+                    item: Some(false),
                 },
                 Object {
                     label: vec!["East".to_string(), "North".to_string(), "West".to_string()],
-                    description: "There seems to be no other path.".to_string(),
+                    description: "The cave has no paths in that direction".to_string(),
                     location: Some(LOC_CAVE),
                     destination: None,
+                    item: Some(false),
                 },
             ],
         }
@@ -277,10 +296,9 @@ impl World {
 
         match (obj_over_there, obj_not_here) {
             // Return none if not a valid command
-            (AmbiguousOption::None, AmbiguousOption::None) => (
-                "Invalid command! Available directions: North, East, West, South.".to_string(),
-                None,
-            ),
+            (AmbiguousOption::None, AmbiguousOption::None) => {
+                ("Invalid command!!".to_string(), None)
+            }
             (AmbiguousOption::None, AmbiguousOption::Some(_)) => {
                 (format!("You don't see any '{}' here.\n", noun), None)
             }
@@ -299,9 +317,12 @@ impl World {
         let mut result = String::new();
         let mut count: u64 = 0;
         for (pos, object) in self.objects.iter().enumerate() {
-            if pos != LOC_PLAYER && self.is_containing(Some(location), Some(pos)) {
+            if pos != LOC_PLAYER
+                && self.is_containing(Some(location), Some(pos))
+                && object.label.len() == 1
+            {
                 if count == 0 {
-                    result += "You see:\n";
+                    result += "\nYou see:\n";
                 }
                 count += 1;
                 result += &format!("{}\n", object.description);
@@ -317,7 +338,7 @@ impl World {
             Command::Go(noun) => self.do_go(noun),
             Command::Quit => "Quitting.\nThank you for playing!".to_string(),
             Command::Unknown(_) => {
-                "Please provide the right command. Available commands: \nlook <add place>\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
+                "Please provide the right command. Available commands: \nlook / look around\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
             }
             Command::Ask(noun) =>self.do_ask(noun),
             Command::Drop(noun) =>self.do_drop(noun),
@@ -361,7 +382,8 @@ impl World {
                     self.objects[LOC_PLAYER].location = obj_dist;
                     "OK.\n".to_string() + &self.do_look("around")
                 } else {
-                    "You are already there.\n".to_string()
+                    let obj_desc = obj_opt.map(|a| self.objects[a].description.clone());
+                    obj_desc.unwrap_or("Invalid command!!\n".to_string())
                 }
             }
         }
@@ -396,20 +418,22 @@ impl World {
     /// Player gets the specified object
     pub fn do_get(&mut self, noun: &String) -> String {
         let (output, obj_opt) = self.object_visible(noun);
-
+        let obj_item = obj_opt.and_then(|a| self.objects[a].item).unwrap_or(false);
         let player_to_obj = self.get_distance(Some(LOC_PLAYER), obj_opt);
 
-        match (player_to_obj, obj_opt) {
-            (Distance::Player, _) => output + "Invalid!!",
-            (Distance::Held, Some(obj_index)) => {
+        match (player_to_obj, obj_opt, obj_item) {
+            (Distance::Player, _, _) => output + "Invalid!! You cannot get that!!",
+            (Distance::Held, Some(obj_index), true) => {
                 output
                     + &format!(
                         "You already have: {}.\n",
                         self.objects[obj_index].description
                     )
             }
-            (Distance::OverThere, _) => output + "Too far away, move closer.\n",
-            (Distance::Unknown, _) => output,
+            (Distance::OverThere, _, true) => output + "The item is not here. Try elsewhere!!\n",
+            (Distance::OverThere, _, false) => output + "You cannot get that!!\n",
+            (Distance::Here, _, false) => output + "You cannot get that!!\n",
+            (Distance::Unknown, _, false) => output,
             _ => self.move_object(obj_opt, Some(LOC_PLAYER)),
         }
     }
@@ -488,7 +512,7 @@ impl World {
         match (obj_opt, obj_loc, to) {
             (None, _, _) => "".to_string(),
             (Some(_), _, None) => "No one is present here to give.\n".to_string(),
-            (Some(_), None, Some(_)) => "You have reached your inventory limit!! Please drop something in your inventory before picking it up!!\n".to_string(),
+            (Some(_), None, Some(_)) => "You cannot get that!!\n".to_string(),
             (Some(obj_idx), Some(_), Some(to_idx)) => {
                 let output = self.describe_move(obj_opt, to);
                 self.objects[obj_idx].location = Some(to_idx);

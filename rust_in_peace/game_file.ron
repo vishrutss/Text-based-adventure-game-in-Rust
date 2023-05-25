@@ -4,126 +4,144 @@ World (
       label:["Forest"],
       description:"Look out for tree people",
       location:None,
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
 
     (
       label:["Dungeons"],
       description:"Be aware of the trolls in the dungeon.",
       location:None,
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
 
     (
       label:["Cave"],
       description:"Watch out for bats and look for light.",
       location:None,
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
 
     (
       label:["Tavern"],
       description:"The tavern is empty. But the fire is still burning in the fireplace.",
       location:None,
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
 
     (
       label:["Player"],
       description:"You",
       location:Some(0),
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
 
     (
       label:["Sword"],
       description:"A rusty sword.",
       location:Some(1),
-      destination:None
+      destination:None,
+      item: Some(true)
     ),
 
     (
       label:["Bow"],
       description:"A bow.",
       location:Some(3),
-      destination:None
+      destination:None,
+      item: Some(true)
     ),
 
     (
       label:["Bones"],
       description:"Bones of some animal.",
       location:Some(2),
-      destination:None
+      destination:None,
+      item: Some(true)
     ),
 
     (
       label:["North"],
-      description:"A path leading out of the forest leading to an old Tavern",
+      description:"A path to the north leading out of the forest leading to an old Tavern",
       location:Some(0),
-      destination:Some(3)
+      destination:Some(3),
+      item: Some(false)
     ),
 
     (
       label:["South"],
-      description:"A path back to the forest",
+      description:"A path to the south leading back to the forest",
       location:Some(3),
-      destination:Some(0)
+      destination:Some(0),
+      item: Some(false)
     ),
 
     (
       label:["East"],
-      description:"A path leading to the Dungeons",
+      description:"A path to the east leading to the Dungeons",
       location:Some(3),
-      destination:Some(1)
+      destination:Some(1),
+      item: Some(false)
     ),
 
     (
       label:["West"],
-      description:"A path leading to the Tavern",
+      description:"A path to the west leading to the Tavern",
       location:Some(1),
-      destination:Some(3)
+      destination:Some(3),
+      item: Some(false)
     ),
 
     (
       label:["North"],
-      description:"A path into a cave",
+      description:"A path to the north into a cave",
       location:Some(1),
-      destination:Some(2)
+      destination:Some(2),
+      item: Some(false)
     ),
 
     (
       label:["South"],
-      description:"A path into the dungeons",
+      description:"A path to the south into the dungeons",
       location:Some(2),
-      destination:Some(1)
+      destination:Some(1),
+      item: Some(false)
     ),
     
     (
       label:["West","East","South"],
-      description:"You see nothing but trees. There seems to be no other path.",
+      description:"You see nothing but trees. There is no other path in that direction.",
       location:Some(0),
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
 
     (
       label:["West","North"],
-      description:"There seems to be no other path.",
+      description:"There is no other path in that direction.",
       location:Some(3),
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
     
     (
       label:["East","South"],
-      description:"You see only big rocks and boulders. There seems to be no other path.",
+      description:"You see only big rocks and boulders. There is no other path in that direction.",
       location:Some(1),
-      destination:None
+      destination:None,
+      item: Some(false)
     ),
 
     (
       label:["East","North","West"],
-      description:"There seems to be no other path.",
+      description:"The cave has no paths in that direction",
       location:Some(2),
-      destination:None
+      destination:None,
+      item: Some(false)
     )
   ]
 )
