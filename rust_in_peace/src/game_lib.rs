@@ -35,6 +35,7 @@ pub enum Command {
     Ask(String),
     Drop(String),
     Get(String),
+    Attack(String),
     Give(String),
     Look(String),
     Go(String),
@@ -50,6 +51,7 @@ impl fmt::Display for Command {
             Command::Ask(_) => write!(f, "ask"),
             Command::Drop(_) => write!(f, "drop"),
             Command::Get(_) => write!(f, "get"),
+            Command::Attack(_) => write!(f, "attack"),
             Command::Give(_) => write!(f, "give"),
             Command::Go(_) => write!(f, "go"),
             Command::Inventory => write!(f, "inventory"),
@@ -68,6 +70,8 @@ pub struct Object {
     pub location: Option<usize>,
     pub destination: Option<usize>,
     pub item: Option<bool>,
+    pub enemy: bool,
+    pub health: Option<u64>,
 }
 
 /// Handles any ambiguous directions
@@ -95,6 +99,8 @@ impl World {
                     location: None,
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["Dungeons".to_string()],
@@ -102,6 +108,8 @@ impl World {
                     location: None,
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["Cave".to_string()],
@@ -109,6 +117,8 @@ impl World {
                     location: None,
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["Tavern".to_string()],
@@ -118,6 +128,8 @@ impl World {
                     location: None,
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["Player".to_string()],
@@ -125,6 +137,8 @@ impl World {
                     location: Some(LOC_FOREST),
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: Some(100),
                 },
                 Object {
                     label: vec!["Sword".to_string()],
@@ -132,6 +146,8 @@ impl World {
                     location: Some(LOC_DUNGEONS),
                     destination: None,
                     item: Some(true),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["Bow".to_string()],
@@ -139,6 +155,8 @@ impl World {
                     location: Some(LOC_TAVERN),
                     destination: None,
                     item: Some(true),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["Bones".to_string()],
@@ -146,6 +164,17 @@ impl World {
                     location: Some(LOC_CAVE),
                     destination: None,
                     item: Some(true),
+                    enemy: false,
+                    health: None,
+                },
+                Object {
+                    label: vec!["Bear".to_string()],
+                    description: "A Grizzly bear".to_string(),
+                    location: Some(LOC_CAVE),
+                    destination: None,
+                    item: Some(false),
+                    enemy: true,
+                    health: Some(100),
                 },
                 Object {
                     label: vec!["North".to_string()],
@@ -154,6 +183,8 @@ impl World {
                     location: Some(LOC_FOREST),
                     destination: Some(LOC_TAVERN),
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["South".to_string()],
@@ -161,6 +192,8 @@ impl World {
                     location: Some(LOC_TAVERN),
                     destination: Some(LOC_FOREST),
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["East".to_string()],
@@ -168,6 +201,8 @@ impl World {
                     location: Some(LOC_TAVERN),
                     destination: Some(LOC_DUNGEONS),
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["West".to_string()],
@@ -175,6 +210,8 @@ impl World {
                     location: Some(LOC_DUNGEONS),
                     destination: Some(LOC_TAVERN),
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["North".to_string()],
@@ -182,6 +219,8 @@ impl World {
                     location: Some(LOC_DUNGEONS),
                     destination: Some(LOC_CAVE),
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["South".to_string()],
@@ -189,6 +228,8 @@ impl World {
                     location: Some(LOC_CAVE),
                     destination: Some(LOC_DUNGEONS),
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["West".to_string(), "East".to_string(), "South".to_string()],
@@ -197,6 +238,8 @@ impl World {
                     location: Some(LOC_FOREST),
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["West".to_string(), "North".to_string()],
@@ -204,6 +247,8 @@ impl World {
                     location: Some(LOC_TAVERN),
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["East".to_string(), "South".to_string()],
@@ -213,6 +258,8 @@ impl World {
                     location: Some(LOC_DUNGEONS),
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
                 Object {
                     label: vec!["East".to_string(), "North".to_string(), "West".to_string()],
@@ -220,6 +267,8 @@ impl World {
                     location: Some(LOC_CAVE),
                     destination: None,
                     item: Some(false),
+                    enemy: false,
+                    health: None,
                 },
             ],
         }
@@ -344,10 +393,69 @@ impl World {
                 "Please provide the right command. Available commands: \nlook / look around\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
             }
             Command::Ask(noun) =>self.do_ask(noun),
+            Command::Attack(noun) =>self.do_attack(noun),
             Command::Drop(noun) =>self.do_drop(noun),
             Command::Get(noun) => self.do_get(noun),
             Command::Give(noun) => self.do_give(noun),
             Command::Inventory => self.do_inventory(),
+        }
+    }
+
+    /// Function to attack an enemy
+    pub fn do_attack(&mut self, noun: &String) -> String {
+        let (output, obj_opt) = self.object_visible(noun);
+
+        match obj_opt {
+            Some(obj_index) => {
+                if self.objects[obj_index].enemy {
+                    let mut obj_health: u64 =
+                        obj_opt.and_then(|a| self.objects[a].health).unwrap_or(0);
+                    println!(
+                        "\nYou are attacking the {}.\n",
+                        self.objects[obj_index].label[0]
+                    );
+                    loop {
+                        println!("Hint: Use the following commands: use <weapon name> or run");
+                        print!("\n> ");
+                        io::stdout().flush().unwrap();
+
+                        let mut command = String::new();
+                        io::stdin()
+                            .read_line(&mut command)
+                            .expect("Failed to read input");
+
+                        println!("Command: {}", command);
+                        if command.contains("use") {
+                            obj_health -= 10;
+                            println!(
+                                "You attacked the {}.\n Enemy health: {}",
+                                self.objects[obj_index].label[0], obj_health
+                            );
+                            if obj_health == 0 {
+                                break;
+                            }
+                        } else if command.contains("run") {
+                            break;
+                        } else {
+                            println!("Invalid command!!");
+                        }
+                    }
+                    if obj_health == 0 {
+                        format!("You killed the {}.\n", self.objects[obj_index].label[0])
+                    } else {
+                        format!(
+                            "You ran away from the {}.\n",
+                            self.objects[obj_index].label[0]
+                        )
+                    }
+                } else {
+                    format!(
+                        "You can't attack the {}.\n",
+                        self.objects[obj_index].label[0]
+                    )
+                }
+            }
+            None => output,
         }
     }
 
@@ -637,6 +745,7 @@ pub fn parse(input: String) -> Command {
         "go" => Command::Go(noun),
         "quit" => Command::Quit,
         "ask" => Command::Ask(noun),
+        "attack" => Command::Attack(noun),
         "drop" => Command::Drop(noun),
         "get" => Command::Get(noun),
         "give" => Command::Give(noun),
@@ -647,7 +756,7 @@ pub fn parse(input: String) -> Command {
 
 /// Function that takes user's input
 pub fn get_input() -> Command {
-    print!("> ");
+    print!("\n> ");
     io::stdout().flush().unwrap();
 
     let mut input = String::new();
