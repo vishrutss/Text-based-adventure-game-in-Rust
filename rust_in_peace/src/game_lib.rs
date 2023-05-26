@@ -434,6 +434,8 @@ impl World {
                             if obj_health == 0 {
                                 break;
                             }
+                            // TODO: Add enemy attacks
+                            todo!("Add enemy attacks");
                         } else if command.contains("run") {
                             break;
                         } else {
