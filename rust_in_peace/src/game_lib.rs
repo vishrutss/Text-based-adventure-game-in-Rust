@@ -3,10 +3,13 @@
 //! that are crucual for running the game
 
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use std::fs::read_to_string;
+use std::io::stdout;
 use std::io::{self, Write};
 use std::path::Path;
-use std::{fmt, println};
+use std::thread;
+use std::time::Duration;
 
 // Indices of all the objects in the game
 const LOC_FOREST: usize = 0;
@@ -657,5 +660,9 @@ pub fn get_input() -> Command {
 
 /// Function to update the screen
 pub fn update_screen(output: String) {
-    println!("{}", output);
+    for c in output.chars() {
+        print!("{}", c);
+        stdout().flush().unwrap(); // Flush the output to make it appear immediately
+        thread::sleep(Duration::from_millis(25)); // Delay between characters
+    }
 }

@@ -1,5 +1,8 @@
 use clearscreen::clear;
 use regex::Regex;
+use std::io::{stdout, Write};
+use std::thread;
+use std::time::Duration;
 use std::{io, println};
 
 const GAME_FILE_LOCATION: &str = "./game_file.ron";
@@ -48,7 +51,12 @@ fn do_game(mut world: game_lib::World) {
     //https://docs.rs/clearscreen/latest/clearscreen/
     clear().expect("Failed to clear screen");
 
-    println!("You find yourself lost in a gloomy forest. You see a column of smoke rising in the sky. It seems to be very far away.");
+    let message="You find yourself lost in a gloomy forest. You see a column of smoke rising in the sky. It seems to be very far away.\n";
+    for c in message.chars() {
+        print!("{}", c);
+        stdout().flush().unwrap(); // Flush the output to make it appear immediately
+        thread::sleep(Duration::from_millis(50)); // Delay between characters
+    }
 
     let mut command: game_lib::Command;
     //let mut world = game_lib::World::new();
