@@ -438,6 +438,7 @@ impl World {
         let list_objects = self.do_inventory();
         if command.contains("inventory"){
             self.type_writer_effect(&list_objects);
+            return obj_health;
         }
         let (output, obj_opt) = self.object_visible(&noun);
         match obj_opt {
