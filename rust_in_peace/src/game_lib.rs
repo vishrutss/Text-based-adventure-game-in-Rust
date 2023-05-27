@@ -791,9 +791,12 @@ impl World {
             }
         }
 
-        for locations in destinations {
-            let location = &self.objects[locations];
-            println!("{}:{}", locations, location.label[0]);
+        for (index, object) in self.objects.iter().enumerate() {
+            //let location = &self.objects[locations];
+            if destinations.contains(&index) {
+                println!("{}: {}", index, object.label[0]);
+            }
+            // println!("{}:{}", locations, location.label[0]);
         }
         //for (index, object) in self.objects.iter().enumerate() {
         //  if let Some(location) = object.location {
