@@ -60,6 +60,8 @@ fn do_game(mut world: game_lib::World) {
         thread::sleep(Duration::from_millis(25)); // Delay between characters
     }
 
+    println!("Hint: Enter <help> to display the commands available");
+    world.display_locations();
     let mut command: game_lib::Command;
     //let mut world = game_lib::World::new();
     let mut output: String;
