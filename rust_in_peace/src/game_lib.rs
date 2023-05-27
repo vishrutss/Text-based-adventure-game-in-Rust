@@ -819,6 +819,7 @@ impl World {
         get <item name>\n
         drop <item name>\n
         inventory \n
+        map \n
         quit\n
         help\n"
             .to_string()
@@ -826,7 +827,7 @@ impl World {
 
     pub fn display_locations(&self) -> String {
         let mut result = String::new();
-        result += "Available locations:";
+        result += "Available locations:\n";
         let mut destinations = std::collections::HashSet::new();
 
         for object in &self.objects {
