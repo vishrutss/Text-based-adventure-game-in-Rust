@@ -433,8 +433,12 @@ impl World {
     /// Function to perform the attack while attacking an enemy
     pub fn do_use(&mut self, msg: &str, mut obj_health: u64, obj_index: usize) -> u64 {
         let mut split_input = msg.split_whitespace();
-        let noun = split_input.nth(1).unwrap_or_default().to_string();
+        let command= split_input.next().unwrap_or_default().to_string();
+        let noun = split_input.next().unwrap_or_default().to_string();
         let list_objects = self.do_inventory();
+        if command.contains("inventory"){
+            self.type_writer_effect(&list_objects);
+        }
         let (output, obj_opt) = self.object_visible(&noun);
         match obj_opt {
             Some(weapon_index) => {
@@ -475,6 +479,7 @@ impl World {
                     }
                 } else if attack_pwr.is_none() {
                     self.type_writer_effect("That is not a weapon!!");
+                    println!("\nHint: Use the following commands: use <weapon name> or run");
                     obj_health
                 } else {
                     self.type_writer_effect(&format!("You don't have a {}.\n", noun));
@@ -507,11 +512,11 @@ impl World {
                         "\nYou are attacking the {}.\n",
                         self.objects[obj_index].label[0]
                     ));
+                    println!("\nHint: Use the following commands: use <weapon name> or run");
                     loop {
                         if self.objects[LOC_PLAYER].health.unwrap_or(0) == 0 {
                             return "\nYou died".to_string();
                         }
-                        println!("\nHint: Use the following commands: use <weapon name> or run");
                         print!("\n> ");
                         io::stdout().flush().unwrap();
 

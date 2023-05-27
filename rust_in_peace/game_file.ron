@@ -85,7 +85,7 @@ World (
       item: Some(true),
       enemy: false,
       health: None,
-      attack: Some(15)
+      attack: Some(10)
     ),
 
     (
