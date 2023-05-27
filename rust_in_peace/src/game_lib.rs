@@ -43,6 +43,7 @@ pub enum Command {
     Unknown(String),
     Inventory,
     Quit,
+    Help,
 }
 
 /// Get input from the user
@@ -59,6 +60,7 @@ impl fmt::Display for Command {
             Command::Look(_) => write!(f, "look"),
             Command::Quit => write!(f, "quit"),
             Command::Unknown(_) => write!(f, "unknown"),
+            Command::Help => write!(f, "help"),
         }
     }
 }
@@ -405,14 +407,16 @@ impl World {
             Command::Go(noun) => self.do_go(noun),
             Command::Quit => "Quitting.\nThank you for playing!".to_string(),
             Command::Unknown(_) => {
-                "Please provide the right command. Available commands: \nlook / look around\nattack <enemy name>\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
+                //"Please provide the right command. Available commands: \nlook / look around\nattack <enemy name>\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
+                self.display_help()
             }
-            Command::Ask(noun) =>self.do_ask(noun),
-            Command::Attack(noun) =>self.do_attack(noun),
-            Command::Drop(noun) =>self.do_drop(noun),
+            Command::Ask(noun) => self.do_ask(noun),
+            Command::Attack(noun) => self.do_attack(noun),
+            Command::Drop(noun) => self.do_drop(noun),
             Command::Get(noun) => self.do_get(noun),
             Command::Give(noun) => self.do_give(noun),
             Command::Inventory => self.do_inventory(),
+            Command::Help => self.display_help(),
         }
     }
 
@@ -762,6 +766,40 @@ impl World {
         }
 
         player_loc
+    }
+
+    pub fn display_help(&self) -> String {
+        "Available commands are\n
+            look - look around\n
+            attack <enemy name>\n
+            go <location>\n
+            get <item name>\n
+            drop <item name>\n
+            inventory \n
+            quit\n
+            help\n"
+            .to_string()
+    }
+
+    pub fn display_locations(&self) {
+        println!("Available locations:");
+        let mut destinations = std::collections::HashSet::new();
+
+        for object in &self.objects {
+            if let Some(destination) = object.destination {
+                destinations.insert(destination);
+            }
+        }
+
+        for locations in destinations {
+            let location = &self.objects[locations];
+            println!("{}:{}", locations, location.label[0]);
+        }
+        //for (index, object) in self.objects.iter().enumerate() {
+        //  if let Some(location) = object.location {
+        // println!("{}: {}", index, self.objects[location].label[0]);
+        //}
+        //}
     }
 }
 
