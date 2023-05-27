@@ -7,7 +7,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -17,7 +18,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -27,7 +29,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -37,7 +40,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -47,7 +51,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: Some(100)
+      health: Some(100),
+      attack: None
     ),
 
     (
@@ -58,6 +63,7 @@ World (
       item: Some(false),
       enemy: true,
       health: Some(100),
+      attack: Some(10)
     ),
 
     (
@@ -67,7 +73,8 @@ World (
       destination:None,
       item: Some(true),
       enemy: false,
-      health: None
+      health: None,
+      attack: Some(20)
     ),
 
     (
@@ -77,7 +84,8 @@ World (
       destination:None,
       item: Some(true),
       enemy: false,
-      health: None
+      health: None,
+      attack: Some(15)
     ),
 
     (
@@ -87,7 +95,8 @@ World (
       destination:None,
       item: Some(true),
       enemy: false,
-      health: None
+      health: None,
+      attack: Some(5)
     ),
 
     (
@@ -97,7 +106,8 @@ World (
       destination:Some(3),
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -107,7 +117,8 @@ World (
       destination:Some(0),
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -117,7 +128,8 @@ World (
       destination:Some(1),
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -127,7 +139,8 @@ World (
       destination:Some(3),
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -137,7 +150,8 @@ World (
       destination:Some(2),
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -147,7 +161,8 @@ World (
       destination:Some(1),
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
     
     (
@@ -157,7 +172,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -167,7 +183,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
     
     (
@@ -177,7 +194,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     ),
 
     (
@@ -187,7 +205,8 @@ World (
       destination:None,
       item: Some(false),
       enemy: false,
-      health: None
+      health: None,
+      attack: None
     )
   ]
 )

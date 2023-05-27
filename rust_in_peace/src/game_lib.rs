@@ -75,6 +75,7 @@ pub struct Object {
     pub item: Option<bool>,
     pub enemy: bool,
     pub health: Option<u64>,
+    pub attack: Option<u64>,
 }
 
 /// Handles any ambiguous directions
@@ -104,6 +105,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["Dungeons".to_string()],
@@ -113,6 +115,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["Cave".to_string()],
@@ -122,6 +125,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["Tavern".to_string()],
@@ -133,6 +137,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["Player".to_string()],
@@ -142,6 +147,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: Some(100),
+                    attack: None,
                 },
                 Object {
                     label: vec!["Bear".to_string()],
@@ -151,6 +157,7 @@ impl World {
                     item: Some(false),
                     enemy: true,
                     health: Some(100),
+                    attack: Some(10),
                 },
                 Object {
                     label: vec!["Sword".to_string()],
@@ -160,6 +167,7 @@ impl World {
                     item: Some(true),
                     enemy: false,
                     health: None,
+                    attack: Some(20),
                 },
                 Object {
                     label: vec!["Bow".to_string()],
@@ -169,6 +177,7 @@ impl World {
                     item: Some(true),
                     enemy: false,
                     health: None,
+                    attack: Some(10),
                 },
                 Object {
                     label: vec!["Bones".to_string()],
@@ -178,6 +187,7 @@ impl World {
                     item: Some(true),
                     enemy: false,
                     health: None,
+                    attack: Some(5),
                 },
                 Object {
                     label: vec!["North".to_string()],
@@ -188,6 +198,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["South".to_string()],
@@ -197,6 +208,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["East".to_string()],
@@ -206,6 +218,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["West".to_string()],
@@ -215,6 +228,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["North".to_string()],
@@ -224,6 +238,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["South".to_string()],
@@ -233,6 +248,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["West".to_string(), "East".to_string(), "South".to_string()],
@@ -243,6 +259,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["West".to_string(), "North".to_string()],
@@ -252,6 +269,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["East".to_string(), "South".to_string()],
@@ -263,6 +281,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
                 Object {
                     label: vec!["East".to_string(), "North".to_string(), "West".to_string()],
@@ -272,6 +291,7 @@ impl World {
                     item: Some(false),
                     enemy: false,
                     health: None,
+                    attack: None,
                 },
             ],
         }
@@ -284,7 +304,6 @@ impl World {
 
         match game_file_data_res {
             Ok(game_file_data) => {
-
                 let deserialized_data: Result<World, ron::error::SpannedError> =
                     ron::from_str(&game_file_data);
 
@@ -404,9 +423,67 @@ impl World {
             Command::Inventory => self.do_inventory(),
             Command::Help => self.display_help(),
             Command::Unknown(_) => {
-                let invalid_msg=String::from("Invalid command!!\n");
-                let help=self.display_help();
-                invalid_msg+help.as_str()
+                let invalid_msg = String::from("Invalid command!!\n");
+                let help = self.display_help();
+                invalid_msg + help.as_str()
+            }
+        }
+    }
+
+    /// Function to perform the attack while attacking an enemy
+    pub fn do_use(&mut self, msg: &str, mut obj_health: u64, obj_index: usize) -> u64 {
+        let mut split_input = msg.split_whitespace();
+        let noun = split_input.nth(1).unwrap_or_default().to_string();
+        let list_objects = self.do_inventory();
+        let (output, obj_opt) = self.object_visible(&noun);
+        match obj_opt {
+            Some(weapon_index) => {
+                let attack_pwr = self.objects[weapon_index].attack;
+                let enemy_pwr = self.objects[obj_index].attack;
+                if list_objects.contains(&noun) {
+                    obj_health -= attack_pwr.unwrap();
+                    self.type_writer_effect(&format!(
+                        "You attacked the {}.\nEnemy health: {}",
+                        self.objects[obj_index].label[0], obj_health
+                    ));
+                    if obj_health == 0 {
+                        self.objects[obj_index].health = Some(0);
+                    }
+                    self.type_writer_effect(&format!(
+                        "\n\nThe {} attacks",
+                        self.objects[obj_index].label[0]
+                    ));
+                    // random attack
+                    let mut rng = rand::thread_rng();
+                    let attack: u64 = rng.gen_range(0..enemy_pwr.unwrap());
+                    if attack == 0 {
+                        self.type_writer_effect("\nYou dodged the attack");
+                        obj_health
+                    } else {
+                        self.type_writer_effect("\nYou got hit");
+                        self.objects[LOC_PLAYER].health = Some(
+                            self.objects[LOC_PLAYER]
+                                .health
+                                .map(|h| h - attack)
+                                .unwrap_or(0),
+                        );
+                        self.type_writer_effect(&format!(
+                            "\nYour health: {}",
+                            self.objects[LOC_PLAYER].health.unwrap_or(0)
+                        ));
+                        obj_health
+                    }
+                } else if attack_pwr.is_none() {
+                    self.type_writer_effect("That is not a weapon!!");
+                    obj_health
+                } else {
+                    self.type_writer_effect(&format!("You don't have a {}.\n", noun));
+                    obj_health
+                }
+            }
+            None => {
+                self.type_writer_effect(&output);
+                obj_health
             }
         }
     }
@@ -431,6 +508,9 @@ impl World {
                         self.objects[obj_index].label[0]
                     ));
                     loop {
+                        if self.objects[LOC_PLAYER].health.unwrap_or(0) == 0 {
+                            return "\nYou died".to_string();
+                        }
                         println!("\nHint: Use the following commands: use <weapon name> or run");
                         print!("\n> ");
                         io::stdout().flush().unwrap();
@@ -439,47 +519,10 @@ impl World {
                         io::stdin()
                             .read_line(&mut command)
                             .expect("Failed to read input");
-
-                        if command.contains("use") {
-                            obj_health -= 10;
-                            self.type_writer_effect(&format!(
-                                "You attacked the {}.\nEnemy health: {}",
-                                self.objects[obj_index].label[0], obj_health
-                            ));
-                            if obj_health == 0 {
-                                self.objects[obj_index].health = Some(0);
-                                break;
-                            }
-                            self.type_writer_effect(&format!(
-                                "\n\nThe {} attacks",
-                                self.objects[obj_index].label[0]
-                            ));
-                            // random attack
-                            let mut rng = rand::thread_rng();
-                            let attack: u64 = rng.gen_range(0..10);
-                            if attack == 0 {
-                                self.type_writer_effect("\nYou dodged the attack");
-                            } else {
-                                self.type_writer_effect("\nYou got hit");
-                                self.objects[LOC_PLAYER].health = Some(
-                                    self.objects[LOC_PLAYER]
-                                        .health
-                                        .map(|h| h - attack)
-                                        .unwrap_or(0),
-                                );
-                                self.type_writer_effect(&format!(
-                                    "\nYour health: {}",
-                                    self.objects[LOC_PLAYER].health.unwrap_or(0)
-                                ));
-                                if self.objects[LOC_PLAYER].health.unwrap_or(0) == 0 {
-                                    return "\nYou died".to_string();
-                                }
-                            }
-                        } else if command.contains("run") {
+                        if command.contains("run") {
                             break;
-                        } else {
-                            println!("Invalid command!!");
                         }
+                        obj_health = self.do_use(&command, obj_health, obj_index);
                     }
                     if obj_health == 0 {
                         format!("You killed the {}.\n", self.objects[obj_index].label[0])
@@ -769,7 +812,7 @@ impl World {
         inventory \n
         quit\n
         help\n"
-        .to_string()
+            .to_string()
     }
 
     pub fn display_locations(&self) {
