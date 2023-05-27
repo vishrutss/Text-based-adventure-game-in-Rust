@@ -1,6 +1,7 @@
 use clearscreen::clear;
 use regex::Regex;
 use std::io::{stdout, Write};
+use std::process::exit;
 use std::thread;
 use std::time::Duration;
 use std::{io, println};
@@ -29,6 +30,7 @@ fn init_game(file_location: &str) -> Result<game_lib::World, std::io::Error> {
 }
 
 fn do_game(mut world: game_lib::World) {
+    clear().expect("Failed to clear screen");
     println!("Hello, Player!\n");
     println!("Welcome to Rust In Peace\n");
     println!("Would you like to start the game? (Y/N)");
@@ -55,7 +57,7 @@ fn do_game(mut world: game_lib::World) {
     for c in message.chars() {
         print!("{}", c);
         stdout().flush().unwrap(); // Flush the output to make it appear immediately
-        thread::sleep(Duration::from_millis(50)); // Delay between characters
+        thread::sleep(Duration::from_millis(25)); // Delay between characters
     }
 
     let mut command: game_lib::Command;
@@ -64,12 +66,40 @@ fn do_game(mut world: game_lib::World) {
 
     // Main game loop
     loop {
+        if world.game_over() {
+            println!("\nWould you like to try again?");
+            println!("\n> ");
+            io::stdout().flush().unwrap();
+
+            let mut command = String::new();
+            io::stdin()
+                .read_line(&mut command)
+                .expect("Failed to read input");
+            if command.trim().to_lowercase() == "y" {
+                clear().expect("Failed to clear screen");
+                let world_result = init_game(GAME_FILE_LOCATION);
+
+                match world_result {
+                    Ok(world) => {
+                        // Here we will run the game
+                        do_game(world);
+                    }
+                    Err(file_err) => {
+                        println!("Error: {}", file_err);
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
         command = game_lib::get_input();
         output = world.update_state(&command);
         game_lib::update_screen(output);
 
         if matches!(command, game_lib::Command::Quit) {
-            break;
+            println!("\nGoodbye!");
+            exit(0);
         }
     }
 

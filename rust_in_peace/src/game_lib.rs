@@ -2,6 +2,7 @@
 //! It contains critical functions like get_input(), update_state(), and update_screen()
 //! that are crucual for running the game
 
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs::read_to_string;
@@ -141,6 +142,15 @@ impl World {
                     health: Some(100),
                 },
                 Object {
+                    label: vec!["Bear".to_string()],
+                    description: "A Grizzly bear".to_string(),
+                    location: Some(LOC_CAVE),
+                    destination: None,
+                    item: Some(false),
+                    enemy: true,
+                    health: Some(100),
+                },
+                Object {
                     label: vec!["Sword".to_string()],
                     description: "A rusty sword.".to_string(),
                     location: Some(LOC_DUNGEONS),
@@ -166,15 +176,6 @@ impl World {
                     item: Some(true),
                     enemy: false,
                     health: None,
-                },
-                Object {
-                    label: vec!["Bear".to_string()],
-                    description: "A Grizzly bear".to_string(),
-                    location: Some(LOC_CAVE),
-                    destination: None,
-                    item: Some(false),
-                    enemy: true,
-                    health: Some(100),
                 },
                 Object {
                     label: vec!["North".to_string()],
@@ -307,6 +308,20 @@ impl World {
         }
     }
 
+    /// Check of the game is over
+    pub fn game_over(&self) -> bool {
+        self.objects[LOC_PLAYER].health == Some(0)
+    }
+
+    /// Function for getting the type writer effect
+    pub fn type_writer_effect(&self, text: &str) {
+        for c in text.chars() {
+            print!("{}", c);
+            stdout().flush().expect("Could not flush stdout");
+            thread::sleep(Duration::from_millis(25));
+        }
+    }
+
     /// Check if the object has a label
     fn object_with_label(&self, object: &Object, noun: &str) -> bool {
         let mut result = false;
@@ -390,7 +405,7 @@ impl World {
             Command::Go(noun) => self.do_go(noun),
             Command::Quit => "Quitting.\nThank you for playing!".to_string(),
             Command::Unknown(_) => {
-                "Please provide the right command. Available commands: \nlook / look around\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
+                "Please provide the right command. Available commands: \nlook / look around\nattack <enemy name>\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
             }
             Command::Ask(noun) =>self.do_ask(noun),
             Command::Attack(noun) =>self.do_attack(noun),
@@ -410,12 +425,18 @@ impl World {
                 if self.objects[obj_index].enemy {
                     let mut obj_health: u64 =
                         obj_opt.and_then(|a| self.objects[a].health).unwrap_or(0);
-                    println!(
+                    if obj_health == 0 {
+                        return format!(
+                            "The {} is already dead.\n",
+                            self.objects[obj_index].label[0]
+                        );
+                    }
+                    self.type_writer_effect(&format!(
                         "\nYou are attacking the {}.\n",
                         self.objects[obj_index].label[0]
-                    );
+                    ));
                     loop {
-                        println!("Hint: Use the following commands: use <weapon name> or run");
+                        println!("\nHint: Use the following commands: use <weapon name> or run");
                         print!("\n> ");
                         io::stdout().flush().unwrap();
 
@@ -424,18 +445,41 @@ impl World {
                             .read_line(&mut command)
                             .expect("Failed to read input");
 
-                        println!("Command: {}", command);
                         if command.contains("use") {
                             obj_health -= 10;
-                            println!(
-                                "You attacked the {}.\n Enemy health: {}",
+                            self.type_writer_effect(&format!(
+                                "You attacked the {}.\nEnemy health: {}",
                                 self.objects[obj_index].label[0], obj_health
-                            );
+                            ));
                             if obj_health == 0 {
+                                self.objects[obj_index].health = Some(0);
                                 break;
                             }
-                            // TODO: Add enemy attacks
-                            todo!("Add enemy attacks");
+                            self.type_writer_effect(&format!(
+                                "\n\nThe {} attacks",
+                                self.objects[obj_index].label[0]
+                            ));
+                            // random attack
+                            let mut rng = rand::thread_rng();
+                            let attack: u64 = rng.gen_range(0..10);
+                            if attack == 0 {
+                                self.type_writer_effect("\nYou dodged the attack");
+                            } else {
+                                self.type_writer_effect("\nYou got hit");
+                                self.objects[LOC_PLAYER].health = Some(
+                                    self.objects[LOC_PLAYER]
+                                        .health
+                                        .map(|h| h - attack)
+                                        .unwrap_or(0),
+                                );
+                                self.type_writer_effect(&format!(
+                                    "\nYour health: {}",
+                                    self.objects[LOC_PLAYER].health.unwrap_or(0)
+                                ));
+                                if self.objects[LOC_PLAYER].health.unwrap_or(0) == 0 {
+                                    return "\nYou died".to_string();
+                                }
+                            }
                         } else if command.contains("run") {
                             break;
                         } else {

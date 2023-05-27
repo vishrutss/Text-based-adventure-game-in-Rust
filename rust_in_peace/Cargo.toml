@@ -9,3 +9,4 @@ clearscreen = "2.0.1"
 regex = "1.8.1"
 serde = { version = "1.0", features = ["derive"]}
 ron = "0.8.0"
+rand = "0.8.5"

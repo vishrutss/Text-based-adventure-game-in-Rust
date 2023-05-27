@@ -51,6 +51,16 @@ World (
     ),
 
     (
+      label: ["Bear"],
+      description: "A Grizzly bear",
+      location: Some(0),
+      destination: None,
+      item: Some(false),
+      enemy: true,
+      health: Some(100),
+    ),
+
+    (
       label:["Sword"],
       description:"A rusty sword.",
       location:Some(1),
@@ -78,16 +88,6 @@ World (
       item: Some(true),
       enemy: false,
       health: None
-    ),
-
-    (
-      label: ["Bear"],
-      description: "A Grizzly bear",
-      location: Some(0),
-      destination: None,
-      item: Some(false),
-      enemy: true,
-      health: Some(100),
     ),
 
     (
