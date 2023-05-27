@@ -44,6 +44,7 @@ pub enum Command {
     Inventory,
     Quit,
     Help,
+    Map,
 }
 
 /// Get input from the user
@@ -61,6 +62,7 @@ impl fmt::Display for Command {
             Command::Quit => write!(f, "quit"),
             Command::Unknown(_) => write!(f, "unknown"),
             Command::Help => write!(f, "help"),
+            Command::Map => write!(f, "help"),
         }
     }
 }
@@ -422,6 +424,7 @@ impl World {
             Command::Give(noun) => self.do_give(noun),
             Command::Inventory => self.do_inventory(),
             Command::Help => self.display_help(),
+            Command::Map => self.display_locations(),
             Command::Unknown(_) => {
                 let invalid_msg = String::from("Invalid command!!\n");
                 let help = self.display_help();
@@ -433,10 +436,10 @@ impl World {
     /// Function to perform the attack while attacking an enemy
     pub fn do_use(&mut self, msg: &str, mut obj_health: u64, obj_index: usize) -> u64 {
         let mut split_input = msg.split_whitespace();
-        let command= split_input.next().unwrap_or_default().to_string();
+        let command = split_input.next().unwrap_or_default().to_string();
         let noun = split_input.next().unwrap_or_default().to_string();
         let list_objects = self.do_inventory();
-        if command.contains("inventory"){
+        if command.contains("inventory") {
             self.type_writer_effect(&list_objects);
             return obj_health;
         }
@@ -821,8 +824,9 @@ impl World {
             .to_string()
     }
 
-    pub fn display_locations(&self) {
-        println!("Available locations:");
+    pub fn display_locations(&self) -> String {
+        let mut result = String::new();
+        result += "Available locations:";
         let mut destinations = std::collections::HashSet::new();
 
         for object in &self.objects {
@@ -834,9 +838,11 @@ impl World {
         for (index, object) in self.objects.iter().enumerate() {
             //let location = &self.objects[locations];
             if destinations.contains(&index) {
-                println!("{}: {}", index, object.label[0]);
+                //println!("{}: {}", index, object.label[0]);
+                result += &format!("{}: {}\n", index, object.label[0]);
             }
         }
+        result
     }
 }
 
@@ -872,6 +878,7 @@ pub fn parse(input: String) -> Command {
         "give" => Command::Give(noun),
         "help" => Command::Help,
         "inventory" => Command::Inventory,
+        "map" => Command::Map,
         _ => Command::Unknown(input.trim().to_string()),
     }
 }
