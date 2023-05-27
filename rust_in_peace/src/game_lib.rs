@@ -284,15 +284,6 @@ impl World {
 
         match game_file_data_res {
             Ok(game_file_data) => {
-                // As of now just returning the new World.
-                // Now we will create a new world
-                // let new_world = World::new();
-                //
-                // //Write the serialised output such that we need to put in ron file
-                // let serialize_ron = ron::to_string(&new_world).unwrap();
-                //
-                // // Print output
-                // println!("Serialized output = {}", serialize_ron);
 
                 let deserialized_data: Result<World, ron::error::SpannedError> =
                     ron::from_str(&game_file_data);
@@ -304,7 +295,6 @@ impl World {
                         de_err_str.to_string(),
                     )),
                 }
-                // Ok(new_world)
             }
             Err(file_err) => Err(file_err),
         }
@@ -406,10 +396,6 @@ impl World {
             Command::Look(noun) => self.do_look(noun),
             Command::Go(noun) => self.do_go(noun),
             Command::Quit => "Quitting.\nThank you for playing!".to_string(),
-            Command::Unknown(_) => {
-                //"Please provide the right command. Available commands: \nlook / look around\nattack <enemy name>\ngo <add place>\nget <item name>\ndrop <item name>\ninventory\nquit\n".to_string()
-                self.display_help()
-            }
             Command::Ask(noun) => self.do_ask(noun),
             Command::Attack(noun) => self.do_attack(noun),
             Command::Drop(noun) => self.do_drop(noun),
@@ -417,6 +403,11 @@ impl World {
             Command::Give(noun) => self.do_give(noun),
             Command::Inventory => self.do_inventory(),
             Command::Help => self.display_help(),
+            Command::Unknown(_) => {
+                let invalid_msg=String::from("Invalid command!!\n");
+                let help=self.display_help();
+                invalid_msg+help.as_str()
+            }
         }
     }
 
@@ -512,7 +503,7 @@ impl World {
     /// Look around the surroundings of the location the player is in
     pub fn do_look(&self, noun: &str) -> String {
         match noun {
-            "around" | "" => {
+            "" => {
                 let (list, _) = self.list_objects(self.objects[LOC_PLAYER].location.unwrap());
                 format!(
                     " You are in the {}\n {}.\n",
@@ -531,7 +522,7 @@ impl World {
         match self.get_distance(Some(LOC_PLAYER), obj_opt) {
             Distance::OverThere => {
                 self.objects[LOC_PLAYER].location = obj_opt;
-                "OK.\n".to_string() + &self.do_look("around")
+                "OK.\n".to_string() + &self.do_look("")
             }
             Distance::NotHere => {
                 format!("You don't see any '{}' here.\n", noun)
@@ -541,7 +532,7 @@ impl World {
                 let obj_dist = obj_opt.and_then(|a| self.objects[a].destination);
                 if obj_dist.is_some() {
                     self.objects[LOC_PLAYER].location = obj_dist;
-                    "OK.\n".to_string() + &self.do_look("around")
+                    "OK.\n".to_string() + &self.do_look("")
                 } else {
                     let obj_desc = obj_opt.map(|a| self.objects[a].description.clone());
                     obj_desc.unwrap_or("Invalid command!!\n".to_string())
@@ -770,15 +761,15 @@ impl World {
 
     pub fn display_help(&self) -> String {
         "Available commands are\n
-            look - look around\n
-            attack <enemy name>\n
-            go <location>\n
-            get <item name>\n
-            drop <item name>\n
-            inventory \n
-            quit\n
-            help\n"
-            .to_string()
+        look\n
+        attack <enemy name>\n
+        go <location>\n
+        get <item name>\n
+        drop <item name>\n
+        inventory \n
+        quit\n
+        help\n"
+        .to_string()
     }
 
     pub fn display_locations(&self) {
@@ -796,13 +787,7 @@ impl World {
             if destinations.contains(&index) {
                 println!("{}: {}", index, object.label[0]);
             }
-            // println!("{}:{}", locations, location.label[0]);
         }
-        //for (index, object) in self.objects.iter().enumerate() {
-        //  if let Some(location) = object.location {
-        // println!("{}: {}", index, self.objects[location].label[0]);
-        //}
-        //}
     }
 }
 
@@ -836,6 +821,7 @@ pub fn parse(input: String) -> Command {
         "drop" => Command::Drop(noun),
         "get" => Command::Get(noun),
         "give" => Command::Give(noun),
+        "help" => Command::Help,
         "inventory" => Command::Inventory,
         _ => Command::Unknown(input.trim().to_string()),
     }
