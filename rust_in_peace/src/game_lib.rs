@@ -62,7 +62,7 @@ impl fmt::Display for Command {
             Command::Quit => write!(f, "quit"),
             Command::Unknown(_) => write!(f, "unknown"),
             Command::Help => write!(f, "help"),
-            Command::Map => write!(f, "help"),
+            Command::Map => write!(f, "map"),
         }
     }
 }
