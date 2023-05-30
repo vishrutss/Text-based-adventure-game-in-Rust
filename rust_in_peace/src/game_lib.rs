@@ -159,7 +159,7 @@ impl World {
                 },
                 Object {
                     label: vec!["Bear".to_string()],
-                    description: "A Grizzly bear".to_string(),
+                    description: "A bear".to_string(),
                     location: Some(LOC_CAVE),
                     destination: None,
                     item: Some(false),
@@ -487,6 +487,7 @@ impl World {
                     ));
                     if obj_health == 0 {
                         self.objects[obj_index].health = Some(0);
+                        return obj_health;
                     }
                     self.type_writer_effect(&format!(
                         "\n\nThe {} attacks",
@@ -563,9 +564,12 @@ impl World {
                             break;
                         }
                         obj_health = self.do_use(&command, obj_health, obj_index);
+                        if obj_health == 0 {
+                            break;
+                        }
                     }
                     if obj_health == 0 {
-                        format!("You killed the {}.\n", self.objects[obj_index].label[0])
+                        format!("\nYou killed the {}.\n", self.objects[obj_index].label[0])
                     } else {
                         format!(
                             "You ran away from the {}.\n",
@@ -650,6 +654,7 @@ impl World {
         output + self.move_object(object_index, player_loc).as_str()
     }
 
+    /// Player consumes the specified object
     pub fn do_consume(&mut self, object: Option<usize>) -> String {
         let heal = self.objects[object.unwrap()].health.unwrap_or(0);
         let mut player_health = self.objects[LOC_PLAYER].health.unwrap_or(0);

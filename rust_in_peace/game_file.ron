@@ -62,8 +62,8 @@ World (
 
     (
       label: ["Bear"],
-      description: "A Grizzly bear",
-      location: Some(0),
+      description: "A bear",
+      location: Some(2),
       destination: None,
       item: Some(false),
       enemy: true,
