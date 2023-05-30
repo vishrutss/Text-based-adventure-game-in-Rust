@@ -467,11 +467,10 @@ impl World {
     /// Function to perform the attack while attacking an enemy
     pub fn do_use(&mut self, msg: &str, mut obj_health: u64, obj_index: usize) -> u64 {
         let mut split_input = msg.split_whitespace();
-        let command = split_input.next().unwrap_or_default().to_string();
-        let noun = split_input.next().unwrap_or_default().to_string();
+        let noun = split_input.nth(1).unwrap_or_default().to_string();
         let list_objects = self.do_inventory();
-        if command.contains("inventory") {
-            self.type_writer_effect(&list_objects);
+        if !list_objects.contains(&noun) {
+            self.type_writer_effect(&format!("You don't have a {}.\n", noun));
             return obj_health;
         }
         let (output, obj_opt) = self.object_visible(&noun);
@@ -518,7 +517,6 @@ impl World {
                     println!("\nHint: Use the following commands: use <weapon name> or run");
                     obj_health
                 } else {
-                    self.type_writer_effect(&format!("You don't have a {}.\n", noun));
                     obj_health
                 }
             }
@@ -548,7 +546,7 @@ impl World {
                         "\nYou are attacking the {}.\n",
                         self.objects[obj_index].label[0]
                     ));
-                    println!("\nHint: Use the following commands: use <weapon name> or run");
+                    println!("\nHint: Use the following commands when attacking: 'use <weapon name>' or 'inventory' or 'run'");
                     loop {
                         if self.objects[LOC_PLAYER].health.unwrap_or(0) == 0 {
                             return "\nYou died".to_string();
@@ -562,10 +560,17 @@ impl World {
                             .expect("Failed to read input");
                         if command.contains("run") {
                             break;
-                        }
-                        obj_health = self.do_use(&command, obj_health, obj_index);
-                        if obj_health == 0 {
-                            break;
+                        } else if command.contains("inventory") {
+                            let list_objects = self.do_inventory();
+                            self.type_writer_effect(&list_objects);
+                            continue;
+                        } else if command.contains("use") {
+                            obj_health = self.do_use(&command, obj_health, obj_index);
+                            if obj_health == 0 {
+                                break;
+                            }
+                        } else {
+                            println!("\nHint: Use the following commands when attacking: 'use <weapon name>' or 'inventory' or 'run'");
                         }
                     }
                     if obj_health == 0 {
