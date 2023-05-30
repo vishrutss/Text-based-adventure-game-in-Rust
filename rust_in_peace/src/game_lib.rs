@@ -78,6 +78,7 @@ pub struct Object {
     pub enemy: bool,
     pub health: Option<u64>,
     pub attack: Option<u64>,
+    pub consumable: Option<bool>,
 }
 
 /// Handles any ambiguous directions
@@ -108,6 +109,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Dungeons".to_string()],
@@ -118,6 +120,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Cave".to_string()],
@@ -128,6 +131,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Tavern".to_string()],
@@ -140,6 +144,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Player".to_string()],
@@ -150,6 +155,7 @@ impl World {
                     enemy: false,
                     health: Some(100),
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Bear".to_string()],
@@ -160,6 +166,7 @@ impl World {
                     enemy: true,
                     health: Some(100),
                     attack: Some(10),
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Sword".to_string()],
@@ -170,6 +177,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: Some(20),
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Bow".to_string()],
@@ -180,6 +188,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: Some(10),
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["Bones".to_string()],
@@ -190,6 +199,18 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: Some(5),
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["Apple".to_string()],
+                    description: "An apple (Get it to increase health)".to_string(),
+                    location: Some(LOC_TAVERN),
+                    destination: None,
+                    item: Some(true),
+                    enemy: false,
+                    health: Some(10),
+                    attack: None,
+                    consumable: Some(true),
                 },
                 Object {
                     label: vec!["North".to_string()],
@@ -201,6 +222,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["South".to_string()],
@@ -211,6 +233,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["East".to_string()],
@@ -221,6 +244,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["West".to_string()],
@@ -231,6 +255,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["North".to_string()],
@@ -241,6 +266,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["South".to_string()],
@@ -251,6 +277,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["West".to_string(), "East".to_string(), "South".to_string()],
@@ -262,6 +289,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["West".to_string(), "North".to_string()],
@@ -272,6 +300,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["East".to_string(), "South".to_string()],
@@ -284,6 +313,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
                 Object {
                     label: vec!["East".to_string(), "North".to_string(), "West".to_string()],
@@ -294,6 +324,7 @@ impl World {
                     enemy: false,
                     health: None,
                     attack: None,
+                    consumable: Some(false),
                 },
             ],
         }
@@ -619,25 +650,52 @@ impl World {
         output + self.move_object(object_index, player_loc).as_str()
     }
 
+    pub fn do_consume(&mut self, object: Option<usize>) -> String {
+        let heal = self.objects[object.unwrap()].health.unwrap_or(0);
+        let mut player_health = self.objects[LOC_PLAYER].health.unwrap_or(0);
+        if player_health == 100 {
+            "You are already at full health".to_string()
+        } else {
+            self.objects[LOC_PLAYER].health = Some(
+                self.objects[LOC_PLAYER]
+                    .health
+                    .map(|h| h + heal)
+                    .unwrap_or(0),
+            );
+            player_health = self.objects[LOC_PLAYER].health.unwrap_or(0);
+            if player_health > 100 {
+                self.objects[LOC_PLAYER].health = Some(100);
+            }
+            self.objects[object.unwrap()].location = None;
+            "You have consumed the item. Your health has increased to ".to_string()
+                + &self.objects[LOC_PLAYER].health.unwrap_or(0).to_string()
+                + "\n"
+        }
+    }
+
     /// Player gets the specified object
     pub fn do_get(&mut self, noun: &String) -> String {
         let (output, obj_opt) = self.object_visible(noun);
         let obj_item = obj_opt.and_then(|a| self.objects[a].item).unwrap_or(false);
         let player_to_obj = self.get_distance(Some(LOC_PLAYER), obj_opt);
+        let obj_consumable = obj_opt
+            .and_then(|a| self.objects[a].consumable)
+            .unwrap_or(false);
 
-        match (player_to_obj, obj_opt, obj_item) {
-            (Distance::Player, _, _) => output + "Invalid!! You cannot get that!!",
-            (Distance::Held, Some(obj_index), true) => {
+        match (player_to_obj, obj_opt, obj_item, obj_consumable) {
+            (Distance::Player, _, _, _) => output + "Invalid!! You cannot get that!!",
+            (Distance::Held, Some(obj_index), true, _) => {
                 output
                     + &format!(
                         "You already have: {}.\n",
                         self.objects[obj_index].description
                     )
             }
-            (Distance::OverThere, _, true) => output + "The item is not here. Try elsewhere!!\n",
-            (Distance::OverThere, _, false) => output + "You cannot get that!!\n",
-            (Distance::Here, _, false) => output + "You cannot get that!!\n",
-            (Distance::Unknown, _, false) => output,
+            (Distance::OverThere, _, true, _) => output + "The item is not here. Try elsewhere!!\n",
+            (Distance::OverThere, _, false, false) => output + "You cannot get that!!\n",
+            (Distance::Here, _, false, false) => output + "You cannot get that!!\n",
+            (Distance::Unknown, _, false, false) => output,
+            (Distance::Here, _, true, true) => self.do_consume(obj_opt),
             _ => self.move_object(obj_opt, Some(LOC_PLAYER)),
         }
     }
