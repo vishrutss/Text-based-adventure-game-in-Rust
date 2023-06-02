@@ -68,7 +68,7 @@ fn do_game(mut world: game_lib::World) {
     // Main game loop
     loop {
         if world.game_over() {
-            println!("\nWould you like to try again?");
+            println!("\nWould you like to play again?");
             println!("\n> ");
             io::stdout().flush().unwrap();
 

@@ -18,6 +18,7 @@ const LOC_DUNGEONS: usize = 1;
 const LOC_CAVE: usize = 2;
 const LOC_TAVERN: usize = 3;
 const LOC_PLAYER: usize = 4;
+const LOC_BEAR: usize = 5;
 
 ///Distance enum containing all the distance prompts
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
@@ -354,7 +355,14 @@ impl World {
 
     /// Check of the game is over
     pub fn game_over(&self) -> bool {
-        self.objects[LOC_PLAYER].health == Some(0)
+        if self.objects[LOC_PLAYER].health == Some(0) {
+            true
+        } else if self.objects[LOC_BEAR].health == Some(0) {
+            println!("You have defeated the bear! You win!");
+            true
+        } else {
+            false
+        }
     }
 
     /// Function for getting the type writer effect
