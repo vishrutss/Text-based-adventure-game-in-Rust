@@ -34,11 +34,9 @@ pub enum Distance {
 
 /// Command enum containing all the command prompts
 pub enum Command {
-    Ask(String),
     Drop(String),
     Get(String),
     Attack(String),
-    Give(String),
     Look(String),
     Go(String),
     Unknown(String),
@@ -52,11 +50,9 @@ pub enum Command {
 impl fmt::Display for Command {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Command::Ask(_) => write!(f, "ask"),
             Command::Drop(_) => write!(f, "drop"),
             Command::Get(_) => write!(f, "get"),
             Command::Attack(_) => write!(f, "attack"),
-            Command::Give(_) => write!(f, "give"),
             Command::Go(_) => write!(f, "go"),
             Command::Inventory => write!(f, "inventory"),
             Command::Look(_) => write!(f, "look"),
@@ -456,11 +452,9 @@ impl World {
             Command::Look(noun) => self.do_look(noun),
             Command::Go(noun) => self.do_go(noun),
             Command::Quit => "Quitting.\nThank you for playing!".to_string(),
-            Command::Ask(noun) => self.do_ask(noun),
             Command::Attack(noun) => self.do_attack(noun),
             Command::Drop(noun) => self.do_drop(noun),
             Command::Get(noun) => self.do_get(noun),
-            Command::Give(noun) => self.do_give(noun),
             Command::Inventory => self.do_inventory(),
             Command::Help => self.display_help(),
             Command::Map => self.display_locations(),
@@ -639,23 +633,6 @@ impl World {
                 }
             }
         }
-    }
-
-    /// Player asks the specified object
-    pub fn do_ask(&mut self, noun: &String) -> String {
-        let player_loc = self.player_here();
-        let (output, object_index) =
-            self.get_possession(player_loc, Command::Ask("ask".to_string()), noun);
-        output + self.move_object(object_index, Some(LOC_PLAYER)).as_str()
-    }
-
-    /// Player gives the specified object
-    pub fn do_give(&mut self, noun: &String) -> String {
-        let player_loc = self.player_here();
-
-        let (output, object_index) =
-            self.get_possession(player_loc, Command::Give("give".to_string()), noun);
-        output + self.move_object(object_index, Some(LOC_PLAYER)).as_str()
     }
 
     /// Player drops the specified object
@@ -948,11 +925,9 @@ pub fn parse(input: String) -> Command {
         "look" => Command::Look(noun),
         "go" => Command::Go(noun),
         "quit" => Command::Quit,
-        "ask" => Command::Ask(noun),
         "attack" => Command::Attack(noun),
         "drop" => Command::Drop(noun),
         "get" => Command::Get(noun),
-        "give" => Command::Give(noun),
         "help" => Command::Help,
         "inventory" => Command::Inventory,
         "map" => Command::Map,
