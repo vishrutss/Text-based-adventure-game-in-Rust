@@ -476,57 +476,57 @@ impl World {
     pub fn do_use(&mut self, msg: &str, mut obj_health: u64, obj_index: usize) -> u64 {
         let mut split_input = msg.split_whitespace();
         let noun = split_input.nth(1).unwrap_or_default().to_string();
-        let list_objects = self.do_inventory();
-        if !list_objects.contains(&noun) {
-            self.type_writer_effect(&format!("You don't have a {}.\n", noun));
-            return obj_health;
-        }
         let (output, obj_opt) = self.object_visible(&noun);
         match obj_opt {
-            Some(weapon_index) => {
-                let attack_pwr = self.objects[weapon_index].attack;
-                let enemy_pwr = self.objects[obj_index].attack;
-                if list_objects.contains(&noun) {
-                    obj_health -= attack_pwr.unwrap();
-                    self.type_writer_effect(&format!(
-                        "You attacked the {}.\nEnemy health: {}",
-                        self.objects[obj_index].label[0], obj_health
-                    ));
-                    if obj_health == 0 {
-                        self.objects[obj_index].health = Some(0);
-                        return obj_health;
-                    }
-                    self.type_writer_effect(&format!(
-                        "\n\nThe {} attacks",
-                        self.objects[obj_index].label[0]
-                    ));
-                    // random attack
-                    let mut rng = rand::thread_rng();
-                    let attack: u64 = rng.gen_range(0..enemy_pwr.unwrap());
-                    if attack == 0 {
-                        self.type_writer_effect("\nYou dodged the attack");
-                        obj_health
-                    } else {
-                        self.type_writer_effect("\nYou got hit");
-                        self.objects[LOC_PLAYER].health = Some(
-                            self.objects[LOC_PLAYER]
-                                .health
-                                .map(|h| h - attack)
-                                .unwrap_or(0),
-                        );
+            Some(weapon_index) if !self.objects[weapon_index].enemy => {
+                if let Some(attack_pwr) = self.objects[weapon_index].attack {
+                    if let Some(enemy_pwr) = self.objects[obj_index].attack {
+                        obj_health -= attack_pwr;
                         self.type_writer_effect(&format!(
-                            "\nYour health: {}",
-                            self.objects[LOC_PLAYER].health.unwrap_or(0)
+                            "You attacked the {}.\nEnemy health: {}",
+                            self.objects[obj_index].label[0], obj_health
                         ));
+                        if obj_health == 0 {
+                            self.objects[obj_index].health = Some(0);
+                            return obj_health;
+                        }
+                        self.type_writer_effect(&format!(
+                            "\n\nThe {} attacks",
+                            self.objects[obj_index].label[0]
+                        ));
+                        // random attack
+                        let mut rng = rand::thread_rng();
+                        let attack: u64 = rng.gen_range(0..enemy_pwr);
+                        if attack == 0 {
+                            self.type_writer_effect("\nYou dodged the attack");
+                            obj_health
+                        } else {
+                            self.type_writer_effect("\nYou got hit");
+                            self.objects[LOC_PLAYER].health = Some(
+                                self.objects[LOC_PLAYER]
+                                    .health
+                                    .map(|h| h - attack)
+                                    .unwrap_or(0),
+                            );
+                            self.type_writer_effect(&format!(
+                                "\nYour health: {}",
+                                self.objects[LOC_PLAYER].health.unwrap_or(0)
+                            ));
+                            obj_health
+                        }
+                    } else {
                         obj_health
                     }
-                } else if attack_pwr.is_none() {
+                } else {
                     self.type_writer_effect("That is not a weapon!!");
                     println!("\nHint: Use the following commands: use <weapon name> or run");
                     obj_health
-                } else {
-                    obj_health
                 }
+            }
+            Some(_) => {
+                self.type_writer_effect("That is not a weapon!!");
+                println!("\nHint: Use the following commands: use <weapon name> or run");
+                obj_health
             }
             None => {
                 self.type_writer_effect(&output);
