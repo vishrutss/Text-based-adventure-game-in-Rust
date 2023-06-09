@@ -1,8 +1,8 @@
 # Rust In Peace
 
-## A text based adventure game
+## A Text Based Adventure Game
 
-### By: Vishrut Sharma and Shrikrishna Bhat
+### Submitted By: Vishrut Sharma and Shrikrishna Bhat
 
 ### Sources
 
