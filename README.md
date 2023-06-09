@@ -20,8 +20,8 @@ For enemies we have currently added an enemy where the player have to defeat the
 
 Our game has following commands which we will explain briefly.
 
-- **look:** This command allows the player to examine the surroundings and inspect specific objects or locations in the game.\
-  When the player enter look command it lists the objects in the surrounding and player is transported to that location.\
+- **look:** This command allows the player to examine the surroundings and inspect specific objects or locations in the game. \
+  When the player enter look command it lists the objects in the surrounding and player is transported to that location. \
 - **go:** This command lets the player go to a specified location, the game state gets updated when the player enters a specific location.\
 - **attack:** This command mainly lets the player attack an enemy. We have introduced a health system for both players and enemies, the health get decreased by random and player also has the choice to run away from the enemy.\
 - **get:** Next set of commands are the inventory commands which are crucial for health system and to end the game. Get command is used to pick up the object like health like an apple or weapon like a bow.\
