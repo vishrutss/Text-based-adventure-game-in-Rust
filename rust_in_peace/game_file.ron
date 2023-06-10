@@ -49,6 +49,30 @@ World (
     ),
 
     (
+      label:["Village"],
+      description:"An abandoned village. It has been ransacked by a group of bandits.",
+      location: None,
+      destination: None,
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false)
+    ),
+
+    (
+      label:["Stronghold"],
+      description:"A stronghold. It is heavily guarded by a group of bandits.",
+      location: None,
+      destination: None,
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false)
+    ),
+
+    (
       label:["Player"],
       description:"You",
       location:Some(0),
@@ -62,13 +86,37 @@ World (
 
     (
       label: ["Bear"],
-      description: "A bear",
+      description: "A bear (enemy)",
       location: Some(2),
       destination: None,
       item: Some(false),
       enemy: true,
       health: Some(100),
-      attack: Some(10),
+      attack: Some(20),
+      consumable: Some(false)
+    ),
+
+    (
+      label: ["Troll"],
+      description: "A troll (enemy)",
+      location: Some(1),
+      destination: None,
+      item: Some(false),
+      enemy: true,
+      health: Some(100),
+      attack: Some(20),
+      consumable: Some(false)
+    ),
+
+    (
+      label: ["Bandits"],
+      description: "A group of bandits (enemy)",
+      location: Some(5),
+      destination: None,
+      item: Some(false),
+      enemy: true,
+      health: Some(100),
+      attack: Some(30),
       consumable: Some(false)
     ),
 
@@ -108,7 +156,19 @@ World (
       consumable: Some(false)
     ),
 
-    Object (
+    (
+      label:["Spear"],
+      description: "A spear.",
+      location: Some(4),
+      destination: None,
+      item: Some(true),
+      enemy: false,
+      health: None,
+      attack: Some(25),
+      consumable: Some(false)
+    ),
+
+    (
       label: ["Apple"],
       description: "An apple (Get it to increase health)",
       location: Some(3),
@@ -118,6 +178,18 @@ World (
       health: Some(10),
       attack: None,
       consumable: Some(true)
+    ),
+
+    (
+      label: ["Potion"],
+      description: "A vial of healing potion (Get it to increase health)  (Hint: Type <get potion> to consume it)",
+      location: Some(4),
+      destination: None,
+      item: Some(true),
+      enemy: false,
+      health: Some(20),
+      attack: None,
+      consumable: Some(true),
     ),
   
     (
@@ -149,6 +221,54 @@ World (
       description:"A path to the east leading to the Dungeons",
       location:Some(3),
       destination:Some(1),
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false)
+    ),
+
+    (
+      label:["West"],
+      description: "A path to the west leading to an abandoned village",
+      location: Some(3),
+      destination: Some(4),
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false),
+    ),
+
+    (
+      label:["East"],
+      description: "A path to the east leading to the tavern",
+      location: Some(4),
+      destination: Some(3),
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false),
+    ),
+
+    (
+      label:["North"],
+      description: "A path to the north leading to a stronghold",
+      location: Some(4),
+      destination: Some(5),
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false),
+    ),
+
+    (
+      label:["South"],
+      description: "A path to the south leading to the village",
+      location: Some(5),
+      destination: Some(4),
       item: Some(false),
       enemy: false,
       health: None,
@@ -205,10 +325,34 @@ World (
     ),
 
     (
-      label:["West","North"],
+      label:["West","East","North"],
+      description: "There is no other path in that direction.",
+      location: Some(5),
+      destination: None,
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false),
+    ),
+
+    (
+      label:["North", ""],
       description:"There is no other path in that direction.",
       location:Some(3),
       destination:None,
+      item: Some(false),
+      enemy: false,
+      health: None,
+      attack: None,
+      consumable: Some(false)
+    ),
+
+    (
+      label:["East", "West"],
+      description: "There is no other path in that direction.",
+      location: Some(4),
+      destination: None,
       item: Some(false),
       enemy: false,
       health: None,

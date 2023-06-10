@@ -17,8 +17,12 @@ const LOC_FOREST: usize = 0;
 const LOC_DUNGEONS: usize = 1;
 const LOC_CAVE: usize = 2;
 const LOC_TAVERN: usize = 3;
-const LOC_PLAYER: usize = 4;
-const LOC_BEAR: usize = 5;
+const LOC_VILLAGE: usize = 4;
+const LOC_STRONGHOLD: usize = 5;
+const LOC_PLAYER: usize = 6;
+const LOC_BEAR: usize = 7;
+const LOC_TROLL: usize = 8;
+const LOC_BANDITS: usize = 9;
 
 ///Distance enum containing all the distance prompts
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
@@ -144,6 +148,32 @@ impl World {
                     consumable: Some(false),
                 },
                 Object {
+                    label: vec!["Village".to_string()],
+                    description:
+                        "An abandoned village. It has been ransacked by a group of bandits."
+                            .to_string(),
+                    location: None,
+                    destination: None,
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["Stronghold".to_string()],
+                    description:
+                        "A stronghold. It is heavily guarded by a group of bandits."
+                            .to_string(),
+                    location: None,
+                    destination: None,
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
                     label: vec!["Player".to_string()],
                     description: "You".to_string(),
                     location: Some(LOC_FOREST),
@@ -156,13 +186,35 @@ impl World {
                 },
                 Object {
                     label: vec!["Bear".to_string()],
-                    description: "A bear".to_string(),
+                    description: "A bear (enemy)".to_string(),
                     location: Some(LOC_CAVE),
                     destination: None,
                     item: Some(false),
                     enemy: true,
                     health: Some(100),
-                    attack: Some(10),
+                    attack: Some(20),
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["Troll (enemy)".to_string()],
+                    description: "A troll".to_string(),
+                    location: Some(LOC_DUNGEONS),
+                    destination: None,
+                    item: Some(false),
+                    enemy: true,
+                    health: Some(100),
+                    attack: Some(20),
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["Bandits (enemy)".to_string()],
+                    description: "A group of bandits".to_string(),
+                    location: Some(LOC_STRONGHOLD),
+                    destination: None,
+                    item: Some(false),
+                    enemy: true,
+                    health: Some(100),
+                    attack: Some(30),
                     consumable: Some(false),
                 },
                 Object {
@@ -199,6 +251,17 @@ impl World {
                     consumable: Some(false),
                 },
                 Object {
+                    label: vec!["Spear".to_string()],
+                    description: "A spear.".to_string(),
+                    location: Some(LOC_VILLAGE),
+                    destination: None,
+                    item: Some(true),
+                    enemy: false,
+                    health: None,
+                    attack: Some(25),
+                    consumable: Some(false),
+                },
+                Object {
                     label: vec!["Apple".to_string()],
                     description: "An apple (Get it to increase health)".to_string(),
                     location: Some(LOC_TAVERN),
@@ -206,6 +269,17 @@ impl World {
                     item: Some(true),
                     enemy: false,
                     health: Some(10),
+                    attack: None,
+                    consumable: Some(true),
+                },
+                Object {
+                    label: vec!["Potion".to_string()],
+                    description: "A vial of healing potion (Get it to increase health)  (Hint: Type <get potion> to consume it)".to_string(),
+                    location: Some(LOC_VILLAGE),
+                    destination: None,
+                    item: Some(true),
+                    enemy: false,
+                    health: Some(20),
                     attack: None,
                     consumable: Some(true),
                 },
@@ -237,6 +311,50 @@ impl World {
                     description: "A path to the east leading to the Dungeons".to_string(),
                     location: Some(LOC_TAVERN),
                     destination: Some(LOC_DUNGEONS),
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["West".to_string()],
+                    description: "A path to the west leading to an abandoned village".to_string(),
+                    location: Some(LOC_TAVERN),
+                    destination: Some(LOC_VILLAGE),
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["East".to_string()],
+                    description: "A path to the east leading to the tavern".to_string(),
+                    location: Some(LOC_VILLAGE),
+                    destination: Some(LOC_TAVERN),
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["North".to_string()],
+                    description: "A path to the north leading to a stronghold".to_string(),
+                    location: Some(LOC_VILLAGE),
+                    destination: Some(LOC_STRONGHOLD),
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["South".to_string()],
+                    description: "A path to the south leading to the village".to_string(),
+                    location: Some(LOC_STRONGHOLD),
+                    destination: Some(LOC_VILLAGE),
                     item: Some(false),
                     enemy: false,
                     health: None,
@@ -289,9 +407,32 @@ impl World {
                     consumable: Some(false),
                 },
                 Object {
-                    label: vec!["West".to_string(), "North".to_string()],
+                    label: vec!["West".to_string(), "East".to_string(), "North".to_string()],
+                    description: "There is no other path in that direction."
+                        .to_string(),
+                    location: Some(LOC_STRONGHOLD),
+                    destination: None,
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["North".to_string(), "".to_string()],
                     description: "There is no other path in that direction.".to_string(),
                     location: Some(LOC_TAVERN),
+                    destination: None,
+                    item: Some(false),
+                    enemy: false,
+                    health: None,
+                    attack: None,
+                    consumable: Some(false),
+                },
+                Object {
+                    label: vec!["East".to_string(),"West".to_string()],
+                    description: "There is no other path in that direction.".to_string(),
+                    location: Some(LOC_VILLAGE),
                     destination: None,
                     item: Some(false),
                     enemy: false,
@@ -353,8 +494,11 @@ impl World {
     pub fn game_over(&self) -> bool {
         if self.objects[LOC_PLAYER].health == Some(0) {
             true
-        } else if self.objects[LOC_BEAR].health == Some(0) {
-            println!("You have defeated the bear! You win!");
+        } else if self.objects[LOC_BEAR].health == Some(0)
+            && self.objects[LOC_TROLL].health == Some(0)
+            && self.objects[LOC_BANDITS].health == Some(0)
+        {
+            println!("You have defeated all enemies! You win!");
             true
         } else {
             false
@@ -420,7 +564,7 @@ impl World {
             // Ambiguous object name
             (AmbiguousOption::Ambiguous, _)
             | (AmbiguousOption::None, AmbiguousOption::Ambiguous) => (
-                format!("Please be more specific about which {} you mean.\n", noun),
+                format!("Please be more specific about which {} you mean. Try typing out the location.\n", noun),
                 None,
             ),
             (AmbiguousOption::Some(index), _) => (String::new(), Some(index)),
