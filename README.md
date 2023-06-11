@@ -71,7 +71,7 @@ Another method of testing the game involved having a friend play it without any 
 Additionally, we tested for exceptions where the attack was not functioning correctly and resolved those issues as well.
 
 ## Link to Video
-[Click to see Video] (https://gitlab.cecs.pdx.edu/a-text-based-adventure-game/rust-in-peace/-/blob/main/PRESENTATION.mp4)
+[Click to see Video](https://gitlab.cecs.pdx.edu/a-text-based-adventure-game/rust-in-peace/-/blob/main/PRESENTATION.mp4)
 
 ## Example of our code
 
