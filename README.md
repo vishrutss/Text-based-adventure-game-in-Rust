@@ -70,6 +70,9 @@ Another method of testing the game involved having a friend play it without any 
 
 Additionally, we tested for exceptions where the attack was not functioning correctly and resolved those issues as well.
 
+## Link to Video
+[Click to see Video] (https://gitlab.cecs.pdx.edu/a-text-based-adventure-game/rust-in-peace/-/blob/main/PRESENTATION.mp4)
+
 ## Example of our code
 
 [![Screenshot-2023-06-08-at-7-34-15-PM.png](https://i.postimg.cc/Gtgf3mhY/Screenshot-2023-06-08-at-7-34-15-PM.png)](https://postimg.cc/YLgRbkFq)
