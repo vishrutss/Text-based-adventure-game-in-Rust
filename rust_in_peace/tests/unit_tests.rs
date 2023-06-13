@@ -27,4 +27,20 @@ mod tests {
         game.objects[LOC_BANDITS].health = Some(100);
         assert_eq!(game.game_over(), false);
     }
+
+    #[test]
+fn test_update_state() {
+    let mut world = World::new();
+    // Test case 1: Quit command
+    let command = Command::Quit;
+    let result = world.update_state(&command);
+    assert_eq!(result, "Quitting.\nThank you for playing!"); // Checking if the result matches the expected message
+
+    // Test case 2: Unknown command
+    let command = Command::Unknown("InvalidCommand".to_string());
+    let result = world.update_state(&command);
+    assert!(result.contains("Invalid command!!")); // Checking if the result contains the expected message
+
+}
+
 }

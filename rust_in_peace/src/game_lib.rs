@@ -526,7 +526,7 @@ impl World {
     }
 
     /// Get the index of the object
-    fn object_index(
+    pub fn object_index(
         &self,
         noun: &str,
         from: Option<usize>,
