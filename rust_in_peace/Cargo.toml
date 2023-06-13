@@ -10,3 +10,11 @@ regex = "1.8.1"
 serde = { version = "1.0", features = ["derive"]}
 ron = "0.8.0"
 rand = "0.8.5"
+
+[lib]
+name = "game_lib"
+path = "src/game_lib.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
