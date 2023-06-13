@@ -1,7 +1,6 @@
 //! This is the game library module.
 //! It contains critical functions like get_input(), update_state(), and update_screen()
 //! that are crucual for running the game
-
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -13,16 +12,16 @@ use std::thread;
 use std::time::Duration;
 
 // Indices of all the objects in the game
-const LOC_FOREST: usize = 0;
-const LOC_DUNGEONS: usize = 1;
-const LOC_CAVE: usize = 2;
-const LOC_TAVERN: usize = 3;
-const LOC_VILLAGE: usize = 4;
-const LOC_STRONGHOLD: usize = 5;
-const LOC_PLAYER: usize = 6;
-const LOC_BEAR: usize = 7;
-const LOC_TROLL: usize = 8;
-const LOC_BANDITS: usize = 9;
+pub const LOC_FOREST: usize = 0;
+pub const LOC_DUNGEONS: usize = 1;
+pub const LOC_CAVE: usize = 2;
+pub const LOC_TAVERN: usize = 3;
+pub const LOC_VILLAGE: usize = 4;
+pub const LOC_STRONGHOLD: usize = 5;
+pub const LOC_PLAYER: usize = 6;
+pub const LOC_BEAR: usize = 7;
+pub const LOC_TROLL: usize = 8;
+pub const LOC_BANDITS: usize = 9;
 
 ///Distance enum containing all the distance prompts
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
