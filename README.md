@@ -22,7 +22,7 @@ Our game has following commands which we will explain briefly.
 
 - **look:** This command allows the player to examine the surroundings and inspect specific objects or locations in the game.
   This command lists the objects in the immediate vicinity. Including weapons, healing items, paths, and location descriptions.
-- **go:** This command lets the player go to a specified location, the game state gets updated when the player enters a specific location. The player can either mention the location name or direction to go to a location. For example a player can either type ```go north``` or ```go tavern``` Available directions are North, East, West, South. The player can only go to a certain location if there is a path to the desired destination. If there is no path to the desired destination the player will not be able to go to that location and will have to find another way.
+- **go:** This command lets the player go to a specified location, the game state gets updated when the player enters a specific location. The player can either mention the location name or direction to go to a location. For example a player can either type `go north` or `go tavern` Available directions are North, East, West, South. The player can only go to a certain location if there is a path to the desired destination. If there is no path to the desired destination the player will not be able to go to that location and will have to find another way.
 - **attack:** This command mainly lets the player attack an enemy. This command enters the player into an attack state/mode. The only commands that work while in this state are `use <weapon name>`, `inventory`, and `run`. The `use` command will perform the attack, the `inventory` command will display the weapons that the player has, and the `run` command will exit the player from the attack state/mode. We have introduced a health system for both players and enemies. The damage done by the player is fixed depending on the weapon used, and the damage done by the enemy is random. If the player chooses to run from the fight the health of the enemy is regenerated to 100 but the player will not regenerate and will have to consume healing items.
 - **get:** This command is used to pick up objects like healing items or a weapon.
 - **drop:** This command is used to drop the items from the inventory which are not needed.
@@ -64,13 +64,16 @@ We have used 5 dependencies for our code namely:
 
 ## Testing
 
-We conducted manual testing of the code to identify working and non-working features. One challenge we encountered was handling unexpected inputs from the player. For example, when the player entered an invalid input like ```get forest```, the object `forest` would mistakenly get added to the inventory. To address such minor errors, we ran the code multiple times and made necessary fixes.
+We conducted manual testing of the code to identify working and non-working features. One challenge we encountered was handling unexpected inputs from the player. For example, when the player entered an invalid input like `get forest`, the object `forest` would mistakenly get added to the inventory. To address such minor errors, we ran the code multiple times and made necessary fixes.
 
 Another method of testing the game involved having a friend play it without any prior knowledge or understanding of how it functioned. As he progressed through the game, he encountered and defeated an enemy, which helped us discover a bug. We had forgotten to account for the scenario when the enemy's health was depleted to 0. The game didn't end, allowing the player to keep attacking the enemy until the game crashed due to negative enemy health. We eventually fixed this bug.
 
 Additionally, we tested for exceptions where the attack was not functioning correctly and resolved those issues as well.
 
+We also wrote some unit tests for some of the function and we have created a folder called tests and added a file `unit_tests.rs`. Some of the functions for which tests are written are - game_over(), do_consume(), do_look(), etc.
+
 ## Link to Video
+
 [Click to see Video](https://gitlab.cecs.pdx.edu/a-text-based-adventure-game/rust-in-peace/-/blob/main/PRESENTATION.mp4)
 
 ## Example of our code
