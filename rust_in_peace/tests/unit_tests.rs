@@ -6,7 +6,7 @@ mod tests {
 
     #[test]
     fn test_game_over() {
-        // Create a game instance
+        // Create a world instance
         let mut world = World::new();
 
         // Scenario 1: Player's health is 0
@@ -80,7 +80,7 @@ fn test_do_look() {
         // Create the objects needed for the test
         let player_health = Some(80);
 
-        // Set the initial game state
+        // Set the initial world state
         world.objects[LOC_PLAYER].health = player_health;
         world.objects.push(Object {
             label: vec!["Apple".to_string()],
@@ -104,12 +104,12 @@ fn test_do_look() {
 
     #[test]
     fn test_do_drop() {
-        let mut game = World::default();
+        let mut world = World::default();
 
-        // Set up the initial game state
-        game.objects[LOC_PLAYER].location = Some(LOC_PLAYER);
-        let object_index = game.objects.len();
-        game.objects.push(Object {
+        // Set up the initial world state
+        world.objects[LOC_PLAYER].location = Some(LOC_PLAYER);
+        let object_index = world.objects.len();
+        world.objects.push(Object {
             label: vec!["Sword".to_string()],
                     description: "A rusty sword.".to_string(),
                     location: Some(LOC_DUNGEONS),
@@ -122,10 +122,29 @@ fn test_do_look() {
         });
 
         // Test dropping an object
-        let result = game.do_drop(&"Sword".to_string());
+        let result = world.do_drop(&"Sword".to_string());
 
         assert_eq!(result, "You are not holding any Sword.\n");
-        assert_eq!(game.objects[object_index].location, Some(LOC_DUNGEONS));
+        assert_eq!(world.objects[object_index].location, Some(LOC_DUNGEONS));
+    }
+
+
+    #[test]
+    fn test_player_here() {
+        let mut world = World::default();
+
+        // Set up the initial world state
+        world.objects[LOC_PLAYER].location = Some(LOC_PLAYER);
+        world.objects[LOC_FOREST].location = Some(LOC_FOREST);
+
+        // Test when the player is at their location
+        let result = world.player_here();
+        assert_eq!(result, Some(LOC_PLAYER));
+
+        // Test when the player is not at their location
+        world.objects[LOC_PLAYER].location = Some(LOC_FOREST);
+        let result = world.player_here();
+        assert_eq!(result, Some(LOC_FOREST));
     }
 }
 
