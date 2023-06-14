@@ -73,6 +73,33 @@ fn test_do_look() {
         assert_eq!(result, "Invalid command!!");
     }
 
+    #[test]
+    fn test_do_consume() {
+        let mut world = World::default();
 
+        // Create the objects needed for the test
+        let player_health = Some(80);
+
+        // Set the initial game state
+        world.objects[LOC_PLAYER].health = player_health;
+        world.objects.push(Object {
+            label: vec!["Apple".to_string()],
+            description: "An apple (Get it to increase health)".to_string(),
+            location: Some(LOC_TAVERN),
+            destination: None,
+            item: Some(true),
+            enemy: false,
+            health: Some(10),
+            attack: None,
+            consumable: Some(true),
+        });
+
+        // Test consuming an object
+        let result = world.do_consume(Some(world.objects.len() - 1));
+
+        assert_eq!(result, "You have consumed the item. Your health has increased to 90\n");
+        assert_eq!(world.objects[LOC_PLAYER].health, Some(90));
+        assert_eq!(world.objects[world.objects.len() - 1].location, None);
+    }
 }
 
