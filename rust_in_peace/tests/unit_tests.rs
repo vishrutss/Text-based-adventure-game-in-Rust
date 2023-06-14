@@ -101,5 +101,31 @@ fn test_do_look() {
         assert_eq!(world.objects[LOC_PLAYER].health, Some(90));
         assert_eq!(world.objects[world.objects.len() - 1].location, None);
     }
+
+    #[test]
+    fn test_do_drop() {
+        let mut game = World::default();
+
+        // Set up the initial game state
+        game.objects[LOC_PLAYER].location = Some(LOC_PLAYER);
+        let object_index = game.objects.len();
+        game.objects.push(Object {
+            label: vec!["Sword".to_string()],
+                    description: "A rusty sword.".to_string(),
+                    location: Some(LOC_DUNGEONS),
+                    destination: None,
+                    item: Some(true),
+                    enemy: false,
+                    health: None,
+                    attack: Some(20),
+                    consumable: Some(false),
+        });
+
+        // Test dropping an object
+        let result = game.do_drop(&"Sword".to_string());
+
+        assert_eq!(result, "You are not holding any Sword.\n");
+        assert_eq!(game.objects[object_index].location, Some(LOC_DUNGEONS));
+    }
 }
 
