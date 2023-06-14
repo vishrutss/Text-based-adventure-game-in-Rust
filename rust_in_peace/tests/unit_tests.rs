@@ -43,4 +43,34 @@ fn test_update_state() {
 
 }
 
+#[test]
+fn test_do_look() {
+    let mut world = World::new();
+
+    // Set up the objects and player's location
+    world.objects[LOC_PLAYER].location = Some(LOC_FOREST);
+    world.objects[LOC_FOREST].label = vec!["Forest".to_string()];
+    world.objects[LOC_FOREST].description = "Look out for tree people.".to_string();
+
+    // Test case 1: Look without specifying a noun
+    let result = world.do_look("");
+    let expected = " You are in the Forest\n Look out for tree people..\n\nYou see:\nA path to the north leading out of the forest leading to an old Tavern\n";
+    assert_eq!(result, expected);
+
+    // Test case 2: Look with an invalid noun
+    let result = world.do_look("invalid");
+    let expected = "Invalid command!!\n";
+    assert_eq!(result, expected);
 }
+
+    #[test]
+    fn test_do_go() {
+        let mut world = World::new();
+        let result = world.do_go(&"South".to_string());
+        assert_eq!(result, "You see nothing but trees. There is no other path in that direction.");
+
+        let result = world.do_go(&"Invalid".to_string());
+        assert_eq!(result, "Invalid command!!");
+    }
+}
+
