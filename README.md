@@ -70,7 +70,7 @@ Another method of testing the game involved having a friend play it without any 
 
 Additionally, we tested for exceptions where the attack was not functioning correctly and resolved those issues as well.
 
-We also wrote some unit tests for some of the function and we have created a folder called tests and added a file `unit_tests.rs`. Some of the functions for which tests are written are - game_over(), do_consume(), do_look(), etc.
+We also wrote some unit tests for some of the function and we have created a folder called tests and added a file `unit_tests.rs`. These are some of the functions for which tests are written - game_over(), do_consume(), do_look(), etc.
 
 ## Link to Video
 
