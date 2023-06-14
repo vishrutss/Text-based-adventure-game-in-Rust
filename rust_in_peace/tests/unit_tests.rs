@@ -7,25 +7,25 @@ mod tests {
     #[test]
     fn test_game_over() {
         // Create a game instance
-        let mut game = World::new();
+        let mut world = World::new();
 
         // Scenario 1: Player's health is 0
-        game.objects[LOC_PLAYER].health = Some(0);
-        assert!(game.game_over());
+        world.objects[LOC_PLAYER].health = Some(0);
+        assert!(world.game_over());
 
         // Scenario 2: Player's health is not 0, but all enemies' health is 0
-        game.objects[LOC_PLAYER].health = Some(100);
-        game.objects[LOC_BEAR].health = Some(0);
-        game.objects[LOC_TROLL].health = Some(0);
-        game.objects[LOC_BANDITS].health = Some(0);
-        assert!(game.game_over());
+        world.objects[LOC_PLAYER].health = Some(100);
+        world.objects[LOC_BEAR].health = Some(0);
+        world.objects[LOC_TROLL].health = Some(0);
+        world.objects[LOC_BANDITS].health = Some(0);
+        assert!(world.game_over());
 
         // Scenario 3: Neither player's health is 0 nor all enemies' health is 0
-        game.objects[LOC_PLAYER].health = Some(100);
-        game.objects[LOC_BEAR].health = Some(100);
-        game.objects[LOC_TROLL].health = Some(100);
-        game.objects[LOC_BANDITS].health = Some(100);
-        assert!(!game.game_over());
+        world.objects[LOC_PLAYER].health = Some(100);
+        world.objects[LOC_BEAR].health = Some(100);
+        world.objects[LOC_TROLL].health = Some(100);
+        world.objects[LOC_BANDITS].health = Some(100);
+        assert!(!world.game_over());
     }
 
     #[test]
@@ -72,5 +72,7 @@ fn test_do_look() {
         let result = world.do_go(&"Invalid".to_string());
         assert_eq!(result, "Invalid command!!");
     }
+
+
 }
 
